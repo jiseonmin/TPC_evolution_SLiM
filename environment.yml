@@ -1,0 +1,22 @@
+name: dsuzukii_env
+channels:
+  - conda-forge
+  - bioconda
+  - defaults
+dependencies:
+  - python
+  - jupyter
+  - jupyterlab
+  - numpy
+  - scipy
+  - matplotlib
+  - seaborn
+  - ipympl
+  - voila
+  - pandas
+  - tskit
+  - slim
+  - msprime
+  - ipykernel
+  - ffmpeg
+  - plotly ## only used for nb's in notes/plotly, may delete later.
