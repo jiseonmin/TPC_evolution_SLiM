@@ -23,6 +23,16 @@ By adding a function to `01_prepare_input_parameters.py`, one create a new param
 
 ## 02. Run SLiM
 Todo - note that slurm specifics should be modified based on the user's computing resources
+### Temperature sampled from a fixed normal distribution
+On a cluster, run
+```
+sbatch 02_run_simulations/gaussian_temp.sh
+```
+This will lauch a slurm job-array.
+
+### other options -- todo
+
+One can add a new bash script similarly formatted as the existing bash scripts for a new task.
 
 ## 03. Process outputs
 Todo - describe what's being done here
