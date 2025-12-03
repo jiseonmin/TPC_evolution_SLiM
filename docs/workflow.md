@@ -1,10 +1,14 @@
 # Simulation Pipeline
 
-Broadly, each workflow goes through 3 steps before it's ready for plotting in `notebooks/`:
+Broadly, each workflow goes through at least 2 steps before it's ready for plotting in `notebooks/`:
 
-01. Prepare input parameters for SLiM
-02. Run SLiM simulations in parallel on cluster
-03. Process the output files from SLiM simulations
+1. Prepare input parameters for SLiM
+2. Run SLiM simulations in parallel on cluster
+
+In some cases, we go through additional steps. This is mainly for the simplified cases where temperature distirbution is Gaussian and doesn't change across generations.
+
+3. Average evolutionary trajectories across replicate simulations
+4. Find expected fitness landscape and expected evolutionary trajectories
 
 There are three workflows in current repository. However, one can add a new analysis to the existing pipeline thanks to its modular design. 
 
@@ -34,7 +38,12 @@ This will lauch a slurm job-array.
 
 One can add a new bash script similarly formatted as the existing bash scripts for a new task.
 
-## 03. Process outputs
-Todo - describe what's being done here
+## 3. Average trajectories (optional)
+
+Run 03_average_gaussian_log_files.py, which will be generalized to take param files from step 1 and use argparse to select appropriate param files (same choices as 01_prepare_input_parameters.py)
+
+## 4. Expected fitness landscape and expected TPC trajectory (optional)
+Run 04_analytical_prediction/gaussian_temp_analytical_prediction.sh for gaussian option. 
+Add other similar bash files for different tasks.
 
 
