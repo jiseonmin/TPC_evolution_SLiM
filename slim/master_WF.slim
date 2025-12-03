@@ -1,0 +1,251 @@
+// Wright-Fisher simulation of a single population with fixed population size where fitness is determined by temperature that can fluctuate generation-to-generation or within generation as well.
+// Set up a day counter that increments by the fixed amount each generation if the generation length is fixed. If it is temperature dependent, the number is determined by the temperature on the first day of the generation.
+// Run while day counter < length of the imported temperature data
+
+initialize() {
+	initializeTreeSeq();
+	// environmental variance
+	defineConstant("ENV_var", 0.5);
+	// Two kinds of quantitative trait mutations (QTNs) are simulated. 
+	defineConstant("QTN_mean", c(0,0));
+	defineConstant("QTN_var", c(0.05, 0.05));
+	// QTN1 (B) has effect size sampled from a normal distribution with mean and standard deviation defined by the first entry of QTN_mean and QTN_var
+	// Note that 'sqrt' used because "n" uses standard deviation not variance
+	initializeMutationType("m2", 0.5, "n", QTN_mean[0], sqrt(QTN_var[0]));
+	// Mutations should have effect even after fixation, so we set convertToSubstition to False.  
+	m2.convertToSubstitution = F;
+	// Color QTN1 red in SLiMgui
+	m2.color = "red";
+	
+	// QTN2 (CTmin) has effect size sampled from a normal distribution with mean and standard deviation defined by the second entry of QTN_mean and QTN_var
+	// Note that 'sqrt' used because "n" uses standard deviation not variance
+	initializeMutationType("m3", 0.5, "n", QTN_mean[1], sqrt(QTN_var[1])); 
+	m3.convertToSubstitution = F;
+	// QTN2 will look blue in SLiMgui
+	m3.color = "blue";
+	// Middle section of the genome is our "QTN region", where each mutation has a 50-50 chance of either being a QTN for CTmin or B.
+	initializeGenomicElementType("g2", c(m2, m3), c(0.5, 0.5));
+	initializeGenomicElement(g2, 20001, 80000);
+	// Now we will define parameters that can be modified if this script is run on command line. For instance, "slim -d T_mean=20 -d T_amp=0 single_pop_no_acclimation.slim" will modify T_mean and T_amp according to your inputs while leaving the rest of the params as default. 
+	// Let's make a dictionary of all default values
+	params = Dictionary(
+		"seed", getSeed(),
+		"TEMPDATA", "./VT_weather.txt", // Change based on file name and relative path.
+		"RUNTIME", 60000, // Maximum runtime. If the temperature data * rep is shorter, it finishes before RUNTIME
+		"BURNIN", 5000, // QTN has no effect on fitness for the first BURNIN generations. This is to accumulate some amount of genetic variation before non-neutral dynamics.
+		"N_POP", 5000, // population size
+		"MU", 1e-7, // mutation rate per bp
+		"Recovery", F, // T = recovery model, F = no-recovery model
+		"FIXED_GEN_LEN", F, //
+		"GEN_LEN", 21, // Default generation length in days if FIXED_GEN_LEN = T. 
+		"SIGMA_TEMP_BETWEEN_INDIVIDUALS", 0., // additional temperature variation between individuals
+		"B_WT", 30, // default B (WT stands for wild-type since this is B if there is no QTN mutations)
+		"CTmin_WT", 0, // default CTmin
+		
+		// params for fitness components in TPC model. 
+		"B_critical", 40, 
+		"DeltaB", 2,
+		"CTmin_critical", 0,
+		"DeltaCTmin", 2,
+		"CTmax_critical", 40,
+		"DeltaCTmax", 0.2,
+		"num_linkage_groups", 12,
+		"LOGINTERVAL", 10,
+		"REP_TEMP_DATA", 20 // number of times to loop through the temperature data
+	); 
+	for (k in params.allKeys) {
+		// if the parameter is not modified with -d, get default value from dictionary.
+		if (!exists(k)) {
+			defineConstant(k, params.getValue(k));		
+		}
+		// if you used -d, replace value in params dictionary with the input value
+		else {
+			params.setValue(k, executeLambda(paste(c(k, ";"), sep='')));
+		}
+	}	
+	defineConstant("PARAMS", params);
+	setSeed(seed);
+	
+	defineConstant("RECOMBINATION_RATE", 1e-8);
+	rates = c(rep(c(RECOMBINATION_RATE, 0.5), num_linkage_groups - 1), RECOMBINATION_RATE);
+	group_length = integerDiv(60000, num_linkage_groups);
+	ends = NULL;
+	for (i in seq(1, num_linkage_groups - 1)) {
+		ends = c(ends, 20000 + group_length * i, 20000 + group_length * i + 1);
+	}
+	ends = c(ends, 99999);
+	initializeRecombinationRate(rates, ends);
+
+
+	// The genome is 100kbp long.
+	// first 20k and last 2k segments are mutation-free in the forward-simulation because they are neutral loci. The neutral mutations can be overlayed on top of the tree sequence after the SLiM simulation. This is much faster than adding neutral mutation during the SLiM simulation.
+	initializeMutationRate(c(0, MU, 0), ends=c(20000, 80000, 99999));
+	// Now decide where to save output files and how to name them.
+	// Note that quotation marks are removed from command line, so you should type something like -d OUTDIR=\'./newdir\' 
+	if (!exists("OUTDIR")) defineConstant("OUTDIR", "./data");
+	if (!exists("OUTNAME")) defineConstant("OUTNAME", "out");
+	if (!fileExists(OUTDIR)) {
+		createDirectory(OUTDIR);
+	}
+}
+
+// Effects of m2 (QTN_B) and mu3 (QTM_CTmin) are accounted for later in fitnesEffect Callback. Before that step, they shouldn't change the fitness.
+mutationEffect(m2) { return 1.0; }
+mutationEffect(m3) { return 1.0; }
+
+1 early() {
+	defineGlobal("DAY_COUNTER", 0);
+	// Read weather data, extract temperature
+	temp_data = DataFrame(readCSV(TEMPDATA)).subsetColumns("T2M").asMatrix();
+	// Repeat the data 20 times
+	defineConstant("TEMP_ALL", rep(temp_data, REP_TEMP_DATA));
+
+	// First generation length determined by zeroth day
+	if (!FIXED_GEN_LEN) {
+		current_temp = TEMP_ALL[DAY_COUNTER];
+		defineGlobal("NEXT_GEN_LEN", gen_len(current_temp));
+	}
+	else {
+		defineGlobal("NEXT_GEN_LEN", GEN_LEN);	
+	}
+	catn(size(TEMP_ALL));
+	catn("number of days " + length(TEMP_ALL));
+	sim.addSubpop("p1", N_POP); 
+	// Setting up a log file that records values every 10 generations.
+	log = community.createLogFile(OUTDIR+"/"+OUTNAME+".txt", logInterval=LOGINTERVAL);
+	log.addCycle();
+	log.addCustomColumn("day", "DAY_COUNTER;");
+	log.addMeanSDColumns("B", "p1.individuals.getValue(\"B\");");
+	log.addMeanSDColumns("CTmin", "p1.individuals.getValue(\"CTmin\");");
+	log.addMeanSDColumns("CTmax", "p1.individuals.getValue(\"CTmin\") + p1.individuals.getValue(\"B\");");
+	log.addMeanSDColumns("Topt", "p1.individuals.getValue(\"CTmin\") + p1.individuals.getValue(\"B\")*2/3;");
+	log.addCustomColumn("B_CTmin_cov", "cov(p1.individuals.getValue(\"B\"), p1.individuals.getValue(\"CTmin\"));");
+	log.addMeanSDColumns("fitness", "p1.individuals.getValue(\"fitness\");");
+}
+1:(BURNIN-1) early() {
+	catn("burnin period: " + sim.cycle);
+}
+
+BURNIN:RUNTIME early() {
+	catn("current day " + DAY_COUNTER);
+	if (FIXED_GEN_LEN) {
+		catn("generation length " + GEN_LEN);
+		end = DAY_COUNTER + GEN_LEN - 1;
+		defineGlobal("temp", TEMP_ALL[DAY_COUNTER:end]);
+		catn("temperatures: ");
+		catn(temp);
+		defineGlobal("DAY_COUNTER", DAY_COUNTER + GEN_LEN);	
+	}
+	else {
+		gen_len = NEXT_GEN_LEN;
+		catn("generation length " + gen_len);
+		end = DAY_COUNTER + gen_len - 1;		
+		
+		defineGlobal("temp", TEMP_ALL[DAY_COUNTER:end]);
+		catn("temperatures:");
+		catn(temp);
+		defineGlobal("DAY_COUNTER", DAY_COUNTER + gen_len);
+		next_first_temp = TEMP_ALL[DAY_COUNTER];
+		defineGlobal("NEXT_GEN_LEN", gen_len(next_first_temp));
+	}
+}
+
+fitnessEffect() {
+	// Environmental factor is drawn from a normal distribution with zero mean, variance defined at the beginning of this script. Draw 2, one affects B, the other affects CTmin
+	epsilon = rnorm(2, mean = 0, sd = sqrt(ENV_var));
+	// B and CTmin of each individual is defined by the sum of effect sizes of QTN_B and QTN_CTmin.
+	B = B_WT + individual.sumOfMutationsOfType(m2) + epsilon[0];
+	CTmin = CTmin_WT + individual.sumOfMutationsOfType(m3) + epsilon[1];
+
+	// Tag individuals with B and CTmin
+	individual.setValue("B", B);
+	individual.setValue("CTmin", CTmin);
+	
+	// During burn-in period, everyone has fitness = 1, regardless of their genotype.
+	if (sim.cycle <= BURNIN){
+		individual.setValue("fitness", 1.);
+		return 1.;
+		}
+	// after burn-in, fitness is affected by TPC and temp.  
+	else {
+		
+		// overall_fitness is a custom function defined at the end of this cript that returns a list of n_r instantaneous fitness's.
+		lifetime_fitness_list = overall_fitness(temp + rnorm(length(temp), sd=SIGMA_TEMP_BETWEEN_INDIVIDUALS), individual, Recovery);
+		// The mean of n_r instantaneous fitness is used for selection step.
+		lifetime_fitness = mean(lifetime_fitness_list);
+		individual.setValue("fitness", lifetime_fitness);
+		return lifetime_fitness;
+		}
+}
+
+
+BURNIN:RUNTIME late() {
+	if (DAY_COUNTER + NEXT_GEN_LEN >= length(TEMP_ALL)){
+		// add final B and CTmin of current population to the metadata
+		PARAMS.setValue("Bs_final", p1.individuals.getValue("B"));
+		PARAMS.setValue("CTmins_final", p1.individuals.getValue("CTmin"));
+	
+		// save tree sequence
+		sim.treeSeqOutput(OUTDIR+"/"+OUTNAME+".trees", metadata = PARAMS);
+		sim.simulationFinished();
+	}
+}
+
+
+// TPC component of fitness where fitness is normalized to 1 when temperature = Topt. We use Deutsch's model that has fitness rise as Gaussian below Topt and fall more rapidly past Topt (parabolic) and stays at zero from CTmax and above.
+function(float)relative_fitness(float temp, float CTmin, float B) {
+	Topt = CTmin + 2 / 3 * B;
+	CTmax = CTmin + B;
+	w_TPC = asFloat(temp <= Topt) * exp(-((3 * temp - 3 * CTmin - 2 * B) / B)^2) + asFloat(temp <= CTmax) * asFloat(temp > CTmin + 2 / 3 * B) * (1 - ((3 * temp - 3 * CTmin - 2 * B) / B)^2);
+	return w_TPC;
+}
+
+// overall fitness is TPC_component multiplied by other fitness components that account for physiological constraints from extreme values of B, CTmin, or CTmax. 
+// temp is a list of temperature at each reproductive cycle, and the output overall_fitness is a list of instantaneous fitness with the same shape.
+function (float)overall_fitness(float temp, object<Individual>$ ind, logical recovery) {
+	CTmin = ind.getValue("CTmin");
+	B = ind.getValue("B");
+	CTmax = CTmin + B;
+	// logistic_B is close to 1 if B << B_critical  - DeltaB, 0 if B >> B_critical + DeltaB
+	logistic_B = 1 / (1 + exp((B - B_critical) / DeltaB));
+	// logistic_CTmin is close to 1 if CTmin >> CTmin_critical+DeltaCTmin, close to 0 if CTmin << CTmin_critical-DeltaCTmin
+	logistic_CTmin = 1 / (1 + exp((-CTmin + CTmin_critical) / DeltaCTmin));
+	// logistic_CTmax is close to 1 if CTmax << CTmax_critical-DeltaCTmax, close to 0 if CTmax >> CTmax_critical-DeltaCTmax
+	logistic_CTmax = 1 / (1 + exp((CTmax - CTmax_critical) / DeltaCTmax));
+	// TPC component (home-away relative fitness)
+	// when using "recovery model", TPC component of each reproductive cycle can be simply calculated from the relative_fitness function from before.
+	if (recovery){	
+		tpc = relative_fitness(temp, CTmin, B);
+		}
+	// for no-recovery model, if at some reproductive cycle, temperature exceeds CTmax, it stops reproducing from that point, and TPC component should be zero for the rest of the generation.
+	else {
+		alive = T;
+		tpc = c();
+		for (t in temp){
+			// asFloat(alive) = 0 if alive = F, making tpc zero, and asFloat(alive) = 1 if alive = T, making tpc equal to tpc_component given by relative_fitness function from before.
+			tpc = c(tpc, asFloat(alive) * relative_fitness(t, CTmin, B));
+			if (t > CTmax){
+				alive = F;
+			}
+		}
+	}
+	// get overall fitness by multiplying all components together
+	fitness = logistic_CTmin * logistic_B * logistic_CTmax * tpc;
+	return fitness;
+}
+
+function (integer)gen_len(float current_temp) {
+	if (current_temp > 40) {
+		gen_len = 14;
+	}
+	else {
+		if (current_temp < 0) {
+			gen_len = 30;
+		}
+		else {
+			gen_len = asInteger(round(30 - 0.4 * current_temp));
+		}
+	}
+	catn(gen_len);
+	return gen_len;
+}
