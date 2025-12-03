@@ -1,0 +1,23 @@
+__pycache__/
+.ipynb_checkpoints/
+
+*.csv
+*.txt
+*.png
+*.pdf
+*.trees
+*.log
+*.out
+.DS_Store
+
+# In general, don't track data files. 
+data/SLiM_input/*
+data/SLiM_output/*
+data/SLiM_output_processed/*
+# List any files that we should keep in github (only use for few, small files)
+# !data/SLiM_input/(file to keep)
+
+# Same for results
+results/figures/*
+# !results/figures/(stuff to track)
+
