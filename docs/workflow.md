@@ -13,8 +13,8 @@ Run `01_prepare_input_parameters.py` with following options, depending on what w
 
 ### Temperature sampled from a fixed normal distribution
 Run
-```
-python 01_prepare_input_parameters.py gaussian
+```bash
+  python 01_prepare_input_parameters.py gaussian
 ```
 It will generate csv file where each row defines input parameters that will be read in by SLiM in the next step. Here, temperature is sampled from a Gaussian distribution each day with mean = 5, 20, or 35 and standard deviation = 1, 3, or 10. Each of 9 simulation is repeated for 30 times with random seed 0 to 29. 
 
@@ -25,8 +25,8 @@ By adding a function to `01_prepare_input_parameters.py`, one create a new param
 Todo - note that slurm specifics should be modified based on the user's computing resources
 ### Temperature sampled from a fixed normal distribution
 On a cluster, run
-```
-sbatch 02_run_simulations/gaussian_temp.sh
+```bash
+  sbatch 02_run_simulations/gaussian_temp.sh
 ```
 This will lauch a slurm job-array.
 
