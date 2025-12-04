@@ -14,6 +14,9 @@ __pycache__/
 !scripts/01_prepare_input_parameters/gaussian_params.csv
 !scripts/01_prepare_input_parameters/gaussian_params_unique.csv
 
+# save example input file for slim script
+!slim/VT_weather.txt
+
 # In general, don't track data files. 
 data/SLiM_input/*
 data/SLiM_output/*
