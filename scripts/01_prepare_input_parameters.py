@@ -1,6 +1,36 @@
 import argparse
 import csv
 import itertools
+import pandas as pd
+# For each workflow, generate two dataframe with parameters (params, params_unique)
+# params list all parameter combinations used for SLiM simulation
+# params_unique iterate through all but random seeds. This is used for analytical step and to average across replicate simulations. 
+
+
+# Each parameters have default values as in the master SLiM script. 
+params_default = {"seed": 13579,
+                  "RUNTIME": 200,
+                  "BURNIN": 50,
+                  "LOGINTERVAL": 1,
+                  "N_POP": 5000,
+                  "RECOVERY": 'F',
+                  "GEN_LEN_DEPENDS_ON_TEMP": 'T',
+                  "USE_EXTERNAL_TEMP_DATA": 'T',
+                  "TEMPDATA_PATH": "./VT_weather.txt",
+                  "MEAN_TEMP": 5,
+                  "STDEV_TEMP": 0,
+                  "NUM_REP_TEMP_DATA": 20,
+                  "B_default": 30,
+                  "CTmin_default": 0,
+                  "B_critical": 40,
+                  "DeltaB": 2,
+                  "CTmin_critical": 0,
+                  "DeltaCTmin": 2,
+                  "CTmax_critical": 40,
+                  "DeltaCTmax": 0.2,
+                  "OUTDIR": "./data",
+                  "OUTNAME": "out"
+                  }
 
 def gaussian_temp():
     '''
@@ -8,64 +38,68 @@ def gaussian_temp():
     Use 3 different mean temperatures, 3 different standard deviations, and repeat for 30 different random seeds.
     Simulation data from this pipeline were used to examine generalist-specialist tradeoff in Min et al. manuscript.
     '''
-    # Scan both muT and sigmaT to compare low/high fluctuation for A1 - specialist vs. generalist
-    muTlist = [5, 20, 35]
-    sigmaTlist = [1, 3, 10]
-    seedlist = range(30)
-    RUNTIME = 20_000
-    N=5000
-    B_WT = 31
-    CTmin_WT = 5
+    param_filename = 'gaussian_params.csv'
+    param_unique_filename = 'gaussian_params_unique.csv'
 
-    filename = "A1_nr_params.csv"
-    runs = []
-    for i, (muT, sigmaT, seed) in enumerate(itertools.product(muTlist, sigmaTlist, seedlist)):
-        if (muT == 35) & (sigmaT == 3):
+    # List of params to scan
+    MEAN_TEMP_list = [5, 20, 35]
+    STDEV_TEMP_list = [1, 3, 10]
+    seed_list = range(30)
+    # OUTNAME will reflect the change of these parameters
+
+    # List of parameters to change from default values, but keep constant across all simulations
+    RUNTIME = 20_000 # except runtime is edited for one of the mean & stdev combination (see if statement later)
+    BURNIN = 5000
+    B_default = 31
+    CTmin_default = 5
+    GEN_LEN_DEPENDS_ON_TEMP = 'F'
+    USE_EXTERNAL_TEMP_DATA = 'F'
+    OUTDIR = "/projects/lotterhos/TPC_evol_SLiM"
+ 
+    # Other params will use values from params_default
+
+    
+    # Loop through all combinations of parameters to scan (in this case, MEAN_TEMP, STDEV_TEMP, seed)
+    # For each combination, create a new parameter dictionary, add it to the parameter list
+    params_list = []
+    for i, (mean_temp, stdev_temp, seed) in enumerate(itertools.product(MEAN_TEMP_list, STDEV_TEMP_list, seed_list)):
+        if (mean_temp == 35) & (stdev_temp == 3):
             # needs extra runtime to equilibrate
             runtime = 40_000
         else:
             runtime = RUNTIME
-        runs.append({
-            'run_id':i,
-            'muT':muT,
-            'sigmaT':sigmaT,
-            'seed':seed,
-            'N':N,
-            'RUNTIME':runtime,
-            'B_WT':B_WT,
-            'CTmin_WT':CTmin_WT,
-            'OUTNAME':f'A1_nr_muT_{muT}_sigmaT_{sigmaT}_seed_{seed}'
-            })
-    fieldnames = list(runs[0].keys())
-    with open(filename, 'w', newline='') as f:
-        writer = csv.DictWriter(f, fieldnames=fieldnames, lineterminator='\n')
-        writer.writeheader()
-        writer.writerows(runs)
-    print(f"Total number of sims={len(muTlist) * len(sigmaTlist) * len(seedlist)}")
 
-    filename_unique = "A1_nr_params_unique.csv"
-    runs_unique = []
-    for i, (muT, sigmaT) in enumerate(itertools.product(muTlist, sigmaTlist)):
-        if (muT == 35) & (sigmaT == 3):
-            runtime = 40_000
-        else:
-            runtime = RUNTIME
-        runs_unique.append({
-            'muT': muT,
-            'sigmaT': sigmaT,
-            'N': N,
-            'RUNTIME': runtime,
-            'B_WT': B_WT,
-            'CTmin_WT': CTmin_WT,
-            'OUTNAME': f'A1_nr_muT_{muT}_sigmaT_{sigmaT}'  # No seed in filename
-        })
-    fieldnames = list(runs_unique[0].keys())
-    with open(filename_unique, 'w', newline='') as f:
-        writer = csv.DictWriter(f, fieldnames=fieldnames, lineterminator='\n')
-        writer.writeheader()
-        writer.writerows(runs_unique)
+        new_row = {
+                'seed': seed,
+                'RUNTIME': runtime,
+                'BURNIN': BURNIN,
+                'GEN_LEN_DEPENDS_ON_TEMP': GEN_LEN_DEPENDS_ON_TEMP,
+                'USE_EXTERNAL_TEMP_DATA': USE_EXTERNAL_TEMP_DATA,
+                'MEAN_TEMP': mean_temp,
+                'STDEV_TEMP': stdev_temp,
+                'B_default': B_default,
+                'CTmin_default': CTmin_default,
+                'OUTDIR': OUTDIR,
+                'OUTNAME': f"gaussian_MEAN_TEMP_{mean_temp}_STDEV_TEMP_{stdev_temp}_seed_{seed}"
+                }
+        for key in params_default.keys():
+            if key not in new_row.keys():
+                new_row[key] = params_default[key]
+        print(new_row)
+        params_list.append(new_row)
 
-    print(f"Created {filename_unique} with {len(runs_unique)} rows")
+    # Save the parameter list
+    params = pd.DataFrame(params_list)
+    print(params.head())
+    params.to_csv(param_filename, index=False)
+
+    # Drop seed and outname columns
+    params_unique = params.drop(columns=['seed', 'OUTNAME']).drop_duplicates().reset_index(drop=True)
+    # Add OUTNAME again without seed
+    params_unique['OUTNAME'] = "gaussian_MEAN_TEMP_" + params_unique['MEAN_TEMP'].astype(str) + "_STDEV_TEMP_" + params_unique['STDEV_TEMP'].astype(str)
+    print(params_unique.head())
+    params_unique.to_csv(param_unique_filename, index=False)
+    
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Prepare simulation parameters')
