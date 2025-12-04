@@ -40,11 +40,13 @@ It is a Wright-Fisher simulation (i.e. non-overlapping generation, population is
 
 In `Initialize()` block, we set up each chromosome of 100 kbp length to have two neutral regions (each 20kbp long) flanking a QTN region (60kbp long). There are two types of mutations, each for B and CTmin (labeled 'm2', m3'). Neutral mutations (conventionally labeled 'm1') are not simulated in SLiM because we are using tree-sequence recording, and they can be added post-SLiM using `pyslim`. Each mutation arising in QTN region is either QTN for B or CTmin by 50-50 chance, and its effect size is sampled from a Gaussian distribution with zero mean and variance of 0.05. QTN mutation arises with rate of 1e-7. The QTN region is divided into 12 linkage groups, and outside the borders between the linkage groups, recombination happens with uniform rate of 1e-8. 
 
+(Add figure)
+
 Parameters that can be changed in command line are all set up in `Initialize()` block. They include:
 
-- seed (integer): random seed used in SLiM. (integer)
-- RUNTIME (integer): total number of generations that simulation runs for. (integer)
-- BURNIN (integer): number of generations at the beginning during which QTN mutations accumulates without selection. (integer)
+- seed (integer): random seed used in SLiM. 
+- RUNTIME (integer): total number of generations that simulation runs for. 
+- BURNIN (integer): number of generations at the beginning during which QTN mutations accumulates without selection. 
 - LOGINTERVAL (integer): information gets logged every LOGINTERVAL generation in a txt file. (integer)
 - N_POP (integer): population size (integer)
 - RECOVERY (T or F): determines how thermal performance in previous days affect the performance in later days of same generation (boolean)
