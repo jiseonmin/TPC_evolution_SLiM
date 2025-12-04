@@ -70,9 +70,9 @@ initialize() {
 		// Number of times to repeat the external temperature data to run simulation longer
 		"NUM_REP_TEMP_DATA", 20,
 		// Starting value of B without any QTNs.
-		"B_DEFAULT", 30, // default B (WT stands for wild-type since this is B if there is no QTN mutations)
+		"B_default", 30, // default B (WT stands for wild-type since this is B if there is no QTN mutations)
 		// Stating value of CTmin without any QTNs.
-		"CTmin_DEFAULT", 0, // default CTmin
+		"CTmin_default", 0, // default CTmin
 
 		//////////////////////////
 		// params for TPC model.//
@@ -197,8 +197,8 @@ fitnessEffect() {
 	// epsilon is a list of environmental factors affecting B and CTmin independently drawn from a normal distribution with zero mean, variance = ENV_var. 
 	epsilon = rnorm(2, mean = 0, sd = sqrt(ENV_var));
 	// Determine B and CTmin combining genetic and environmental factors
-	B = B_DEFAULT + individual.sumOfMutationsOfType(m2) + epsilon[0];
-	CTmin = CTmin_DEFAULT + individual.sumOfMutationsOfType(m3) + epsilon[1];
+	B = B_default + individual.sumOfMutationsOfType(m2) + epsilon[0];
+	CTmin = CTmin_default + individual.sumOfMutationsOfType(m3) + epsilon[1];
 
 	// Tag individuals with B and CTmin
 	individual.setValue("B", B);
