@@ -32,6 +32,7 @@ params_default = {"seed": 13579,
                   "OUTNAME": "out"
                   }
 
+
 def gaussian_temp():
     '''
     Assume temperature is Gaussian-distributed.
@@ -90,6 +91,10 @@ def gaussian_temp():
 
     # Save the parameter list
     params = pd.DataFrame(params_list)
+    # Re-order columns to match the default parameter dictionary
+    column_order = list(params_default.keys())
+    params = params[column_order]
+
     print(params.head())
     params.to_csv(param_filename, index=False)
 
