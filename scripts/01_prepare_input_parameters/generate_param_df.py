@@ -15,6 +15,7 @@ params_default = {"seed": 13579,
                   "N_POP": 5000,
                   "RECOVERY": 'F',
                   "GEN_LEN_DEPENDS_ON_TEMP": 'T',
+                  "FIXED_GEN_LEN": 10,
                   "USE_EXTERNAL_TEMP_DATA": 'T',
                   "TEMPDATA_PATH": "./VT_weather.txt",
                   "MEAN_TEMP": 5,
@@ -31,6 +32,13 @@ params_default = {"seed": 13579,
                   "OUTDIR": "./data",
                   "OUTNAME": "out"
                   }
+
+# We will use the same order of parameters when saving the dataframes
+column_order = ['seed', 'RUNTIME', 'BURNIN', 'LOGINTERVAL', 'N_POP', 'RECOVERY',
+        'GEN_LEN_DEPENDS_ON_TEMP', 'FIXED_GEN_LEN', 'USE_EXTERNAL_TEMP_DATA', 
+        'TEMPDATA_PATH', 'MEAN_TEMP', 'STDEV_TEMP', 'NUM_REP_TEMP_DATA', 'B_default', 
+        'CTmin_default', 'B_critical', 'DeltaB', 'CTmin_critical', 'DeltaCTmin', 
+        'CTmax_critical', 'DeltaCTmax', 'OUTDIR', 'OUTNAME']
 
 
 def gaussian_temp():
@@ -86,23 +94,20 @@ def gaussian_temp():
         for key in params_default.keys():
             if key not in new_row.keys():
                 new_row[key] = params_default[key]
-        print(new_row)
         params_list.append(new_row)
 
     # Save the parameter list
     params = pd.DataFrame(params_list)
-    # Re-order columns to match the default parameter dictionary
-    column_order = list(params_default.keys())
+    # Re-order columns (matches the order in slurm script in next step)
     params = params[column_order]
-
-    print(params.head())
+    # Save as csv file
     params.to_csv(param_filename, index=False)
 
     # Drop seed and outname columns
     params_unique = params.drop(columns=['seed', 'OUTNAME']).drop_duplicates().reset_index(drop=True)
     # Add OUTNAME again without seed
     params_unique['OUTNAME'] = "gaussian_MEAN_TEMP_" + params_unique['MEAN_TEMP'].astype(str) + "_STDEV_TEMP_" + params_unique['STDEV_TEMP'].astype(str)
-    print(params_unique.head())
+    # Save as csv file
     params_unique.to_csv(param_unique_filename, index=False)
     
 
@@ -110,8 +115,9 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Prepare simulation parameters')
     parser.add_argument('--task', type=str, required=True,
                        choices=['gaussian'],
-                       help='Type of simulation scenario')
+                       help='Type of simulation task')
     
     args = parser.parse_args()
     if args.task == 'gaussian':
+        print("making parameter files for gaussian task.")
         gaussian_temp()
