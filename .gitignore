@@ -10,6 +10,10 @@ __pycache__/
 *.out
 .DS_Store
 
+# save parameter files used for manuscript
+!scripts/01_prepare_input_parameters/gaussian_params.csv
+!scripts/01_prepare_input_parameters/gaussian_params_unique.csv
+
 # In general, don't track data files. 
 data/SLiM_input/*
 data/SLiM_output/*
