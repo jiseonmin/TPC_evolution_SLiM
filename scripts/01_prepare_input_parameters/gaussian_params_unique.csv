@@ -1,0 +1,10 @@
+RUNTIME,BURNIN,LOGINTERVAL,N_POP,RECOVERY,GEN_LEN_DEPENDS_ON_TEMP,USE_EXTERNAL_TEMP_DATA,TEMPDATA_PATH,MEAN_TEMP,STDEV_TEMP,NUM_REP_TEMP_DATA,B_default,CTmin_default,B_critical,DeltaB,CTmin_critical,DeltaCTmin,CTmax_critical,DeltaCTmax,OUTDIR,OUTNAME
+20000,5000,1,5000,F,F,F,./VT_weather.txt,5,1,20,31,5,40,2,0,2,40,0.2,/projects/lotterhos/TPC_evol_SLiM,gaussian_MEAN_TEMP_5_STDEV_TEMP_1
+20000,5000,1,5000,F,F,F,./VT_weather.txt,5,3,20,31,5,40,2,0,2,40,0.2,/projects/lotterhos/TPC_evol_SLiM,gaussian_MEAN_TEMP_5_STDEV_TEMP_3
+20000,5000,1,5000,F,F,F,./VT_weather.txt,5,10,20,31,5,40,2,0,2,40,0.2,/projects/lotterhos/TPC_evol_SLiM,gaussian_MEAN_TEMP_5_STDEV_TEMP_10
+20000,5000,1,5000,F,F,F,./VT_weather.txt,20,1,20,31,5,40,2,0,2,40,0.2,/projects/lotterhos/TPC_evol_SLiM,gaussian_MEAN_TEMP_20_STDEV_TEMP_1
+20000,5000,1,5000,F,F,F,./VT_weather.txt,20,3,20,31,5,40,2,0,2,40,0.2,/projects/lotterhos/TPC_evol_SLiM,gaussian_MEAN_TEMP_20_STDEV_TEMP_3
+20000,5000,1,5000,F,F,F,./VT_weather.txt,20,10,20,31,5,40,2,0,2,40,0.2,/projects/lotterhos/TPC_evol_SLiM,gaussian_MEAN_TEMP_20_STDEV_TEMP_10
+20000,5000,1,5000,F,F,F,./VT_weather.txt,35,1,20,31,5,40,2,0,2,40,0.2,/projects/lotterhos/TPC_evol_SLiM,gaussian_MEAN_TEMP_35_STDEV_TEMP_1
+40000,5000,1,5000,F,F,F,./VT_weather.txt,35,3,20,31,5,40,2,0,2,40,0.2,/projects/lotterhos/TPC_evol_SLiM,gaussian_MEAN_TEMP_35_STDEV_TEMP_3
+20000,5000,1,5000,F,F,F,./VT_weather.txt,35,10,20,31,5,40,2,0,2,40,0.2,/projects/lotterhos/TPC_evol_SLiM,gaussian_MEAN_TEMP_35_STDEV_TEMP_10
