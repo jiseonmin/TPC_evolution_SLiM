@@ -53,7 +53,7 @@ OUTDIR=${OUTDIR},\
 OUTNAME=${OUTNAME}"
 
 # Run python script for analytical predictions
-python -u prediction.py ${RECOVERY} \
+python -u predict.py ${RECOVERY} \
 ${AVG_GEN_LEN} ${MEAN_TEMP} ${STDEV_TEMP} \
 ${B_default} ${CTmin_default} ${B_critical} \
 ${DeltaB} ${CTmin_critical} ${DeltaCTmin} \
