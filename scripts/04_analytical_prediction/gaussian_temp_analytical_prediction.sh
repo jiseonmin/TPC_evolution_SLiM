@@ -57,6 +57,6 @@ python -u prediction.py ${RECOVERY} \
 ${AVG_GEN_LEN} ${MEAN_TEMP} ${STDEV_TEMP} \
 ${B_default} ${CTmin_default} ${B_critical} \
 ${DeltaB} ${CTmin_critical} ${DeltaCTmin} \
-${CTmax_critical} ${DeltaCTmax} ${OUTDIR }${OUTNAME}
+${CTmax_critical} ${DeltaCTmax} ${OUTDIR} ${OUTNAME}
 
 echo "Analytical prediction job finished for output name = ${OUTNAME}"
