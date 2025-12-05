@@ -1,16 +1,20 @@
 # Simulation Pipeline
 
-Broadly, each workflow goes through at least 2 steps before it's ready for plotting in `notebooks/`:
+Broadly, each workflow goes through at least 2 steps before it's ready for analysis (see `notebooks/` for examples):
 
 1. Prepare input parameters for SLiM
 2. Run SLiM simulations in parallel on cluster
 
-In some cases, we go through additional steps. This is mainly for the simplified cases where temperature distirbution is Gaussian and doesn't change across generations.
+Once the SLiM simulations are finished, you are ready to analyze the outputs. 
+But you can also go through two extra steps.
+
+If you repeated same simulations with different random seed, you can 
 
 3. Average evolutionary trajectories across replicate simulations and each trajectory along with the average trajectory
-4. Find expected fitness landscape and expected evolutionary trajectories
 
-There are three workflows in current repository. However, one can add a new analysis to the existing pipeline thanks to its modular design. 
+If you want to find what analytical theory predicts the fitness landscape would look like and how TPC should evolve from the initial state, assuming temperature is Gaussian distribution, run step 4. Step 3 and 4 are independent of each other.
+
+There are two workflows in current repository: 'gaussian' and 'sine'. However, one can add a new analysis to the existing pipeline thanks to its modular design. 
 
 ## 01. Preparing parameters
 Make a table of parameters used in master SLiM script, formatted like `01_prepare_input_parameters/gaussian_params.csv` or `sine_params.csv`, which were created running `generate_param_df.py` in the same folder (using `--task=gaussian` or `--task=sine`). 
@@ -49,7 +53,6 @@ This approach is useful if you are running small number of simulations (<10).
 Similar to the job array example, change the first few lines and path to csv and slim files before running the bash script.
 
 ## 03. Average trajectories and visualize (optional)
-
 `03_average_and_visualize_logged_data.py` averages the log files created from 'gaussian' workflow across the replicate simulations. It also generates a diagnostic figure that plots some of the logged parameters against generation time. 
 
 ## 04. Expected fitness landscape and expected TPC trajectory (optional)
