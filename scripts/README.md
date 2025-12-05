@@ -4,15 +4,14 @@ Broadly, each workflow goes through at least 2 steps before it's ready for analy
 
 1. Prepare input parameters for SLiM
 2. Run SLiM simulations in parallel on cluster
+3. Make analytical prediction
 
-Once the SLiM simulations are finished, you are ready to analyze the outputs. 
-But you can also go through two extra steps.
+Once the SLiM simulations are finished (step 2), you are ready to analyze the outputs. 
+Step 3 is for comparing analytical theory and simulation, which can be optional.
 
 If you repeated same simulations with different random seed, you can 
 
-3. Average evolutionary trajectories across replicate simulations and each trajectory along with the average trajectory
-
-You can also find what analytical theory predicts the fitness landscape would look like and how TPC should evolve from the initial state, assuming temperature is Gaussian distribution (step 4). Step 3 and 4 are independent of each other.
+4. Average evolutionary trajectories across replicate simulations and each trajectory along with the average trajectory
 
 There are two workflows in current repository: 'gaussian' and 'sine'. However, one can add a new analysis to the existing pipeline thanks to its modular design. 
 
@@ -52,12 +51,11 @@ to something like `/home/(your-user-name)/TPC_evolution_SLiM/slim`
 This approach is useful if you are running small number of simulations (<10). 
 Similar to the job array example, change the first few lines and path to csv and slim files before running the bash script.
 
-## 03. Average trajectories and visualize (optional)
-`03_average_and_visualize_logged_data.py` averages the log files created from 'gaussian' workflow across the replicate simulations. It also generates a diagnostic figure that plots some of the logged parameters against generation time. 
-
-## 04. Expected fitness landscape and expected TPC trajectory (optional)
+## 03. Expected fitness landscape and expected TPC trajectory (optional)
 Here, we use helper functions from `tpc_functions_oo.py` to calculate expected fitness landscape, optimal B and CTmin that maximizes expected fitness, and path from initial B and CTmin and optimal B and CTmin predicted from solving a differential equation numerically.
 The theoretical model assumes temperature to be Gaussian distributed and generation length to be constant.
 Currently, there is one bash script that will generate an .npz file for each line in `gaussian_params_unique.csv`. 
 One can use it for a different task by changing `CSV_FILE` and `AVG_GEN_LEN` appropriately along with the first few lines starting with `#SBATCH` appropriately, as described in step 2.
 
+## 04. Average trajectories and visualize (optional)
+`04_average_and_visualize_logged_data.py` averages the log files created from 'gaussian' workflow across the replicate simulations. It also generates a diagnostic figure that plots some of the logged parameters against generation time. 
