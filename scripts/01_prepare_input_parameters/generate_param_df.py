@@ -127,8 +127,12 @@ def sine():
     # OUTNAME will reflect the change of these parameters
 
     # List of parameters to change from default values, but keep constant across all simulations
-    RUNTIME = 20_000 
+    RUNTIME = 20_000
+    NUM_REP_TEMP_DATA = 200
+    # runtime will be shorter than the length of repeated temperature data, so simulation will end at
+    # generation = 20_000
     BURNIN = 5000
+    STDEV_TEMP = 1
     B_default = 31
     CTmin_default = 5
     N_POP = 50_000 # using bigger population to see tracking more clearly
@@ -143,7 +147,9 @@ def sine():
     for i, (recovery, gen_len_depends_on_temp) in enumerate(itertools.product(RECOVERY_list, GEN_LEN_DEPENDS_ON_TEMP_list)):
         new_row = {
                 'RUNTIME': RUNTIME,
+                'NUM_REP_TEMP_DATA': NUM_REP_TEMP_DATA,
                 'BURNIN': BURNIN,
+                'STDEV_TEMP': STDEV_TEMP,
                 'B_default': B_default,
                 'CTmin_default': CTmin_default,
                 'N_POP': N_POP,
