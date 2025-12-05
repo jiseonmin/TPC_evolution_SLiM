@@ -26,12 +26,11 @@ Now you are ready to run simulations!
 
 ## Running simulations
 
-See `docs/workflow.md` for detailed instructions. 
+See `scripts/workflow.md` for detailed instructions. 
 
 ## Repository Structure
 - `slim/` - Master SLiM script and documentation
 - `scripts/` - Parameter preparation, execution, and analysis scripts
 - `data/` - Input data (tracking only small input data)
 - `results/` - Output figures and tables
-- `docs/` - Detailed documentation
 - `notebooks/` - Notebooks for generating manuscript figures and interactive notebooks
