@@ -1,7 +1,14 @@
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-params_df = pd.read_csv("A1_nr_params.csv")
+params_df = pd.read_csv("./01_prepare_params_df/gaussian_params_unique.csv")
+
+# Todo - update titles (more columns added to log files
+# Use iterrow to go through all rows of params_df (don't need muTlist, and other lists), find all file that matches {OUTDIR}{OUTNAME}_seed_*.trees pattern
+# load txt file with the same title as the .trees file. This will replace the step checking whether population crashed. (.trees only saved if simulation didn't crash)
+# Finally, save files using the row's OUTDIR and OUTNAME (no need to remove _seed_0)
+# Remove ax.flat[i].vlines because the log file only starts recording after burnin period now
+# Plot only 8 columns (days, Temp, B_mean, CTmin_mean, CTmax_mean, Topt_mean, B_CTmin_cov, fitness_mean) 
 muTlist = set(params_df['muT'])
 sigmaTlist = set(params_df['sigmaT'])
 seedlist = set(params_df['seed'])
