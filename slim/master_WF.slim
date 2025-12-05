@@ -47,7 +47,7 @@ initialize() {
 
 	// Define default parameter values. Each can be modified when this script is run on command line.
 	params = Dictionary(
-		"seed", getSeed(),
+		"seed", 13579,
 		// maximum run time. When using external temperature data, the simulation will run for RUNTIME generations or until it reaches the end of temperature data, whichever is shorter.
 		"RUNTIME", 200,
 		// QTN has no effect on fitness for the first BURNIN generations. This is to accumulate some amount of genetic variation before non-neutral dynamics. 
