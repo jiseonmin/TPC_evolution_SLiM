@@ -13,30 +13,32 @@ In some cases, we go through additional steps. This is mainly for the simplified
 There are three workflows in current repository. However, one can add a new analysis to the existing pipeline thanks to its modular design. 
 
 ## 01. Preparing parameters
-Run `01_prepare_input_parameters.py` with following options, depending on what workflow you want to run. 
-
-### Temperature sampled from a fixed normal distribution
-Run
-```bash
-  python 01_prepare_input_parameters.py gaussian
-```
-It will generate csv file where each row defines input parameters that will be read in by SLiM in the next step. Here, temperature is sampled from a Gaussian distribution each day with mean = 5, 20, or 35 and standard deviation = 1, 3, or 10. Each of 9 simulation is repeated for 30 times with random seed 0 to 29. 
-
-### Other options - todo
-By adding a function to `01_prepare_input_parameters.py`, one create a new parameter files for SLiM to use.
+Make a table of parameters used in master SLiM script, formatted like `01_prepare_input_parameters/gaussian_params.csv`, which was created running `generate_param_df.py` with in the same folder (using `--task=gaussian`). 
+You can create a similar table however you want, using R, Excel, Google sheets, etc. 
+** Important - make sure your file has the same header as the example. **
+Read `slim/README.md` for further information of each parameter.
 
 ## 02. Run SLiM
-Todo - note that slurm specifics should be modified based on the user's computing resources
-### Temperature sampled from a fixed normal distribution
-On a cluster, run
+
+### Job array example
+
+`02_run_simulations/example_job_array.sh` is used to submit jobs defined in `01_prepare_input_parameters/gaussian_params.csv` as job array on Northeastern Explorer cluster. It launch 270 jobs, each running one SLiM simulation.
+
 ```bash
-  sbatch 02_run_simulations/gaussian_temp.sh
+  sbatch 02_run_simulations/example_job_array.sh
 ```
-This will lauch a slurm job-array.
+You will have to modify the bash script based on your user name, partition you want to use and have access to, etc. See how to modify lines starting with `#SBATCH` from [NURC's documentation](https://rc-docs.northeastern.edu/en/latest/runningjobs/slurmarray.html) or other similar websites from your institution. In addition, change
+```
+CSV_FILE="/home/j.min/TPC_evolution_SLiM/scripts/01_prepare_input_parameters/gaussian_params.csv"
+```
+using the path to parameter file you will use. It will be like
+```
+CSV_FILE="/home/(your-user-name)/TPC_evolution_SLiM/scripts/01_prepare_input_parameters/(your-csv-file).csv"
+```
+Also change `/home/j.min/TPC_evolution_SLiM/slim/master_WF.slim` from the end of the second to last line with the correct path to the master SLiM script. It's probably going to be `/home/(your-user-name)/TPC_evolution_SLiM/slim/master_WF.slim`
 
-### other options -- todo
-
-One can add a new bash script similarly formatted as the existing bash scripts for a new task.
+### Single job example
+Todo - add an example where only one job is submitted and multiple SLiM simulations run on the same node at the same time. This works well when there are small number of simulations to run (< 10).
 
 ## 3. Average trajectories (optional)
 
