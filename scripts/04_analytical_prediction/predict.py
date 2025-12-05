@@ -107,7 +107,7 @@ else:
                                                  )
 
 print("theoretical trajectory calculated.")
-np.savez(f"{OUTDIR}{OUTNAME}_analytical_info.npz", 
+np.savez(f"{OUTDIR}/{OUTNAME}_analytical_info.npz", 
          CTmin_grid=CTmin_grid, 
          B_grid=B_grid, 
          W_contour=meanWcontour, 
