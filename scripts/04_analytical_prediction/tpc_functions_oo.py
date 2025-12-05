@@ -5,11 +5,12 @@ from scipy import optimize
 import scipy
 from scipy.integrate import solve_ivp, quad, dblquad
 
-class w_TPC:
+class tpc_functions:
     """
-    thermal performance curve, incorporating enzymatic and physiological fitness components.
+    object contatining functions related to thermal performance curve model of Min et al. 
+    (incorporating enzymatic and physiological fitness components.)
     By default, B, CTmin, T (entry for w_TPC) is not an attribute.
-    Parameters for the physiological constraints are the attribute.
+    Parameters for the physiological constraints attributed and have default values.
     """
     def __init__(self, B_critical=40, Delta_B=2, CTmin_critical=0, Delta_CTmin=2, CTmax_critical=40, Delta_CTmax=0.2, num_days_per_gen=10):
         self.B_critical= B_critical
