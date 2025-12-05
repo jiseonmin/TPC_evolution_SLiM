@@ -5,7 +5,7 @@
 #SBATCH --time=0-12:00:00
 #SBATCH --mem=20G
 #SBATCH --partition=lotterhos
-#SBATCH --cpus-per-task=5
+#SBATCH --cpus-per-task=1
 
 module load anaconda3
 eval "$(conda shell.bash hook)"
@@ -21,11 +21,15 @@ SLIM_PATH="/home/j.min/TPC_evolution_SLiM/slim"
 cd "$SLIM_PATH"
 
 # Loop through all parameter rows
-while IFS=',' read -r seed RUNTIME BURNIN LOGINTERVAL N_POP RECOVERY GEN_LEN_DEPENDS_ON_TEMP FIXED_GEN_LEN USE_EXTERNAL_TEMP_DATA TEMPDATA_PATH MEAN_TEMP STDEV_TEMP NUM_REP_TEMP_DATA B_default CTmin_default B_critical DeltaB CTmin_critical DeltaCTmin CTmax_critical DeltaCTmax OUTDIR OUTNAME; do
+while IFS=',' read -r seed RUNTIME BURNIN LOGINTERVAL N_POP RECOVERY \
+	GEN_LEN_DEPENDS_ON_TEMP FIXED_GEN_LEN USE_EXTERNAL_TEMP_DATA \
+	TEMPDATA_PATH MEAN_TEMP STDEV_TEMP NUM_REP_TEMP_DATA B_default\
+       	CTmin_default B_critical DeltaB CTmin_critical DeltaCTmin\
+       	CTmax_critical DeltaCTmax OUTDIR OUTNAME; do
     
     echo "Starting simulation: ${OUTNAME}"
     
-    # Run slim in background, redirect output to individual log files
+    # Run slim in background
     (
         slim -d seed=${seed} \
              -d RUNTIME=${RUNTIME} \
