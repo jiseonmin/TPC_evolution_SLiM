@@ -26,7 +26,7 @@ Now you are ready to run simulations!
 
 ## Running simulations
 
-See `scripts/workflow.md` for detailed instructions. 
+See `scripts/README.md` for detailed instructions. 
 
 ## Repository Structure
 - `slim/` - Master SLiM script and documentation
