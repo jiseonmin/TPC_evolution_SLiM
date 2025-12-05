@@ -31,6 +31,5 @@ See `scripts/workflow.md` for detailed instructions.
 ## Repository Structure
 - `slim/` - Master SLiM script and documentation
 - `scripts/` - Parameter preparation, execution, and analysis scripts
-- `data/` - Input data (tracking only small input data)
-- `results/` - Output figures and tables
-- `notebooks/` - Notebooks for generating manuscript figures and interactive notebooks
+- `data/` - Input data for notebooks
+- `notebooks/` - Notebooks for generating figures and interactive notebooks (not added yet)
