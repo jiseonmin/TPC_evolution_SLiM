@@ -12,7 +12,7 @@ If you repeated same simulations with different random seed, you can
 
 3. Average evolutionary trajectories across replicate simulations and each trajectory along with the average trajectory
 
-If you want to find what analytical theory predicts the fitness landscape would look like and how TPC should evolve from the initial state, assuming temperature is Gaussian distribution, run step 4. Step 3 and 4 are independent of each other.
+You can also find what analytical theory predicts the fitness landscape would look like and how TPC should evolve from the initial state, assuming temperature is Gaussian distribution (step 4). Step 3 and 4 are independent of each other.
 
 There are two workflows in current repository: 'gaussian' and 'sine'. However, one can add a new analysis to the existing pipeline thanks to its modular design. 
 
