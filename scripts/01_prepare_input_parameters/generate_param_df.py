@@ -41,7 +41,7 @@ column_order = ['seed', 'RUNTIME', 'BURNIN', 'LOGINTERVAL', 'N_POP', 'RECOVERY',
         'CTmax_critical', 'DeltaCTmax', 'OUTDIR', 'OUTNAME']
 
 
-def gaussian_temp():
+def gaussian():
     '''
     Assume temperature is Gaussian-distributed.
     Use 3 different mean temperatures, 3 different standard deviations, and repeat for 30 different random seeds.
@@ -111,13 +111,80 @@ def gaussian_temp():
     params_unique.to_csv(param_unique_filename, index=False)
     
 
+def sine():
+    '''
+    Assume mean temperature fluctuates sinusoidally between 0 and 35.
+    Additionally individuals experience random fluctuation with stdev = 1
+    Generate 4 rows choosing whether generation is temperature dependent or not,
+    and whether to use recovery or no-recovery model
+    '''
+    param_filename = 'sine_params.csv'
+    param_unique_filename = 'sine_params_unique.csv'
+
+    # List of params to scan
+    RECOVERY_list = ['T', 'F']
+    GEN_LEN_DEPENDS_ON_TEMP_list = ['T', 'F']
+    # OUTNAME will reflect the change of these parameters
+
+    # List of parameters to change from default values, but keep constant across all simulations
+    RUNTIME = 20_000 
+    BURNIN = 5000
+    B_default = 31
+    CTmin_default = 5
+    N_POP = 50_000 # using bigger population to see tracking more clearly
+    TEMPDATA_PATH = "./sine.csv"
+    OUTDIR = "/projects/lotterhos/TPC_evol_SLiM"
+ 
+    # Other params will use values from params_default
+
+    # Loop through all combinations of parameters to scan
+    # For each combination, create a new parameter dictionary, add it to the parameter list
+    params_list = []
+    for i, (recovery, gen_len_depends_on_temp) in enumerate(itertools.product(RECOVERY_list, GEN_LEN_DEPENDS_ON_TEMP_list)):
+        new_row = {
+                'RUNTIME': RUNTIME,
+                'BURNIN': BURNIN,
+                'B_default': B_default,
+                'CTmin_default': CTmin_default,
+                'N_POP': N_POP,
+                'TEMPDATA_PATH': TEMPDATA_PATH,
+                'OUTDIR': OUTDIR,
+                'RECOVERY': recovery,
+                'GEN_LEN_DEPENDS_ON_TEMP': gen_len_depends_on_temp,
+                'OUTNAME': f"sine_RECOVERY_{recovery}_GEN_LEN_DEPENDS_ON_TEMP_{gen_len_depends_on_temp}"
+                }
+        for key in params_default.keys():
+            if key not in new_row.keys():
+                new_row[key] = params_default[key]
+        params_list.append(new_row)
+
+    # Save the parameter list
+    params = pd.DataFrame(params_list)
+    # Re-order columns (matches the order in slurm script in next step)
+    params = params[column_order]
+    # Save as csv file
+    params.to_csv(param_filename, index=False)
+
+    # Drop seed and outname columns
+    params_unique = params.drop(columns=['seed', 'OUTNAME']).drop_duplicates().reset_index(drop=True)
+    # Add OUTNAME again without seed
+    params_unique['OUTNAME'] = "sine_RECOVERY_" + \
+        params_unique['RECOVERY'].astype(str) + \
+            "_GEN_LEN_DEPENDS_ON_TEMP_" + \
+                params_unique['GEN_LEN_DEPENDS_ON_TEMP'].astype(str)
+    # Save as csv file
+    params_unique.to_csv(param_unique_filename, index=False)    
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Prepare simulation parameters')
     parser.add_argument('--task', type=str, required=True,
-                       choices=['gaussian'],
+                       choices=['gaussian', 'sine'],
                        help='Type of simulation task')
     
     args = parser.parse_args()
     if args.task == 'gaussian':
         print("making parameter files for gaussian task.")
-        gaussian_temp()
+        gaussian()
+    elif args.task == 'sine':
+        print("making parameter files for sine task.")
+        sine()
