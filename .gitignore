@@ -13,16 +13,18 @@ __pycache__/
 # save parameter files used for manuscript
 !scripts/01_prepare_input_parameters/gaussian_params.csv
 !scripts/01_prepare_input_parameters/gaussian_params_unique.csv
+!scripts/01_prepare_input_parameters/sine_params.csv
+!scripts/01_prepare_input_parameters/sine_params_unique.csv
+
 
 # save example input file for slim script
 !slim/VT_weather.txt
+!slim/sine.csv
 
 # In general, don't track data files. 
-data/SLiM_input/*
-data/SLiM_output/*
-data/SLiM_output_processed/*
-# List any files that we should keep in github (only use for few, small files)
-# !data/SLiM_input/(file to keep)
+data/*
+# List any files that we should keep in github
+# !data/(file to keep)
 
 # Same for results
 results/figures/*
