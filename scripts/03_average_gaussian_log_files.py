@@ -1,7 +1,11 @@
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-params_df = pd.read_csv("./01_prepare_params_df/gaussian_params_unique.csv")
+
+# modify path for your task of choice
+params_unique_path = "./01_prepare_input_parameters/gaussian_params_unique.csv"
+params_df = pd.read_csv(params_unique_path)
+
 
 # Todo - update titles (more columns added to log files
 # Use iterrow to go through all rows of params_df (don't need muTlist, and other lists), find all file that matches {OUTDIR}{OUTNAME}_seed_*.trees pattern
