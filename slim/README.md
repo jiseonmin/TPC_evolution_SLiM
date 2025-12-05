@@ -34,7 +34,7 @@ We do that using a parameter table saved as .csv file and a slurm script in `scr
 You can read further on the workflow in `scripts/workflow.md` and how to create a new simulation task.
 If you want to read more about how to launch SLiM in command line and run jobs in array, check out [slim-sublaunching](https://github.com/slim-community/slim-sublaunching).
 
-## Detailed explantion on SLiM script
+## Detailed explantion on SLiM script (work in progress)
 `master_WT.slim` simulates TPC evolution in a fixed thermal environment or using an external daily temperature data.
 It is a Wright-Fisher simulation (i.e. non-overlapping generation, population is replaced every generation via binomial sampling weighted by fitness) where two key parameters of thermal performance curve (TPC), B and CTmin, are polygenic traits. Fitness is determined by the individual's TPC and a list of daily temperatures experienced by the individual during current generation.
 
