@@ -13,10 +13,12 @@ In some cases, we go through additional steps. This is mainly for the simplified
 There are three workflows in current repository. However, one can add a new analysis to the existing pipeline thanks to its modular design. 
 
 ## 01. Preparing parameters
-Make a table of parameters used in master SLiM script, formatted like `01_prepare_input_parameters/gaussian_params.csv`, which was created running `generate_param_df.py` with in the same folder (using `--task=gaussian`). 
+Make a table of parameters used in master SLiM script, formatted like `01_prepare_input_parameters/gaussian_params.csv` or `sine_params.csv`, which were created running `generate_param_df.py` in the same folder (using `--task=gaussian` or `--task=sine`). 
 You can create a similar table however you want, using R, Excel, Google sheets, etc. 
-***Important - make sure your file has the same header as the example.***
+***Important - make sure your file has the same header as the examples.***
 Read `slim/README.md` for further information of each parameter.
+Both example tasks have a similar looking csv file without seed column and OUTNAME without seed (`gaussian_params_unique.csv` and `sine_params_unique.csv`). 
+These are used in step 3 and 4 and are not necessary for running SLiM on cluster (step 2).
 
 ## 02. Run SLiM
 
@@ -35,17 +37,25 @@ using the path to parameter file you will use. It will be like
 ```
 CSV_FILE="/home/(your-user-name)/TPC_evolution_SLiM/scripts/01_prepare_input_parameters/(your-csv-file).csv"
 ```
-Also change `/home/j.min/TPC_evolution_SLiM/slim/master_WF.slim` from the end of the second to last line with the correct path to the master SLiM script. It's probably going to be `/home/(your-user-name)/TPC_evolution_SLiM/slim/master_WF.slim`
+Also change the path to SLiM script:
+```
+SLIM_PATH="/home/j.min/TPC_evolution_SLiM/slim"
+```
+to something like `/home/(your-user-name)/TPC_evolution_SLiM/slim`
 
 ### Single job example
-Todo - add an example where only one job is submitted and multiple SLiM simulations run on the same node at the same time. This works well when there are small number of simulations to run (< 10).
+`02_run_simulations/example_single_job.sh` submit a single job which runs 4 SLiM simulations in parallel. 
+This approach is useful if you are running small number of simulations (<10). 
+Make sure you request enough number of cpus-per-task (using 5 in this example) so that CPUs are allocated across the simulations efficiently. 
+Similar to the job array example, change the first few lines and path to csv and slim files before running the bash script.
 
-## 3. Average trajectories (optional)
+## 03. Average trajectories and visualize (optional)
 
-Run 03_average_gaussian_log_files.py, which will be generalized to take param files from step 1 and use argparse to select appropriate param files (same choices as 01_prepare_input_parameters.py)
+`03_average_and_visualize_logged_data.py` averages the log files created from 'gaussian' workflow across the replicate simulations. It also generates a diagnostic figure that plots some of the logged parameters against generation time. 
 
-## 4. Expected fitness landscape and expected TPC trajectory (optional)
-Run 04_analytical_prediction/gaussian_temp_analytical_prediction.sh for gaussian option. 
-Add other similar bash files for different tasks.
-
+## 04. Expected fitness landscape and expected TPC trajectory (optional)
+Here, we use helper functions from `tpc_functions_oo.py` to calculate expected fitness landscape, optimal B and CTmin that maximizes expected fitness, and path from initial B and CTmin and optimal B and CTmin predicted from solving a differential equation numerically.
+The theoretical model assumes temperature to be Gaussian distributed and generation length to be constant.
+Currently, there is one bash script that will generate an .npz file for each line in `gaussian_params_unique.csv`. 
+One can use it for a different task by changing `CSV_FILE` and `AVG_GEN_LEN` appropriately along with the first few lines starting with `#SBATCH` appropriately, as described in step 2.
 
