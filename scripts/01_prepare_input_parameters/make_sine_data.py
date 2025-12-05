@@ -7,4 +7,4 @@ period = 360 # in days
 
 days = np.arange(period * 10)
 Temp = np.sin(2 * np.pi * days / period) * amplitude + mean
-np.savetxt('../../slim/sine.csv', X=Temp, header='T2M', comments="", delimiter=",")
+np.savetxt('../../slim/sine.csv', X=Temp, fmt='%.4f', header='T2M', comments="", delimiter=",")
