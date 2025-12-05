@@ -16,6 +16,10 @@ CSV_FILE="/home/j.min/TPC_evolution_SLiM/scripts/01_prepare_input_parameters/sin
 TOTAL_LINES=$(tail -n +2 "$CSV_FILE" | wc -l)
 echo "Running $TOTAL_LINES simulations in parallel"
 
+# Move to slim path
+SLIM_PATH="/home/j.min/TPC_evolution_SLiM/slim"
+cd "$SLIM_PATH"
+
 # Loop through all parameter rows
 while IFS=',' read -r seed RUNTIME BURNIN LOGINTERVAL N_POP RECOVERY GEN_LEN_DEPENDS_ON_TEMP FIXED_GEN_LEN USE_EXTERNAL_TEMP_DATA TEMPDATA_PATH MEAN_TEMP STDEV_TEMP NUM_REP_TEMP_DATA B_default CTmin_default B_critical DeltaB CTmin_critical DeltaCTmin CTmax_critical DeltaCTmax OUTDIR OUTNAME; do
     
@@ -46,7 +50,7 @@ while IFS=',' read -r seed RUNTIME BURNIN LOGINTERVAL N_POP RECOVERY GEN_LEN_DEP
              -d DeltaCTmax=${DeltaCTmax} \
              -d OUTDIR=\'${OUTDIR}\' \
              -d OUTNAME=\'${OUTNAME}\' \
-             /home/j.min/TPC_evolution_SLiM/slim/master_WF.slim
+             master_WF.slim
         
         echo "$(date): Finished ${OUTNAME}"
     ) &
