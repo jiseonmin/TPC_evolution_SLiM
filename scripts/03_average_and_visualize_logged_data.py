@@ -13,7 +13,7 @@ params_path = "./01_prepare_input_parameters/gaussian_params.csv"
 params = pd.read_csv(params_path)
 
 # Column titles to extract and plot
-titles = ['days', 'Temp', 'B_mean', 'CTmin_mean', 'CTmax_mean', 'Topt_mean', 'B_CTmin_cov', 'fitness_mean']
+titles = ['day', 'Temp', 'B_mean', 'CTmin_mean', 'CTmax_mean', 'Topt_mean', 'B_CTmin_cov', 'fitness_mean']
 
 rbw_cmap = plt.get_cmap('rainbow')
 plt.rcParams.update({'font.size': 10})
@@ -21,7 +21,7 @@ plt.rcParams.update({'font.size': 10})
 
 def get_matching_params(unique_row, params_df):
     """Get all param rows matching a unique_row (all replicates)."""
-    merge_cols = [col for col in unique_row.index if col in params_df.columns and col != 'seed']
+    merge_cols = [col for col in unique_row.index if col in params_df.columns and col not in ['seed', 'OUTNAME']]
     row_df = unique_row.to_frame().T
     return params_df.merge(row_df[merge_cols], on=merge_cols, how='inner')
 
@@ -36,7 +36,6 @@ for idx, unique_row in params_unique.iterrows():
     
     # Get all matching replicate rows
     replicates = get_matching_params(unique_row, params)
-    
     # Create figure with 2x4 subplots (8 total)
     fig, ax = plt.subplots(2, 4, figsize=(20, 10))
     data_list = []
@@ -117,11 +116,11 @@ for idx, unique_row in params_unique.iterrows():
     
     # Save figure and data using OUTNAME from params_unique
     fig.tight_layout()
-    fig.savefig(f"{OUTDIR}/SI_Fig_{OUTNAME}.png")
+    fig.savefig(f"{OUTDIR}/summary_{OUTNAME}.png")
     np.save(f"{OUTDIR}/avg_df_{OUTNAME}.npy", avg_df_dict)
     np.save(f"{OUTDIR}/end_df_{OUTNAME}.npy", end_df)
     
     plt.close(fig)
-    print(f"  Saved: SI_Fig_{OUTNAME}.png")
+    print(f"  Saved: summary_Fig_{OUTNAME}.png, avg_df_{OUTNAME}.npy, and end_df_{OUTNAME}.npy")
 
 print(f"Finished processing all log files.")
