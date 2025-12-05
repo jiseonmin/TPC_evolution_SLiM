@@ -34,7 +34,6 @@ IFS=',' read -r RUNTIME BURNIN LOGINTERVAL N_POP\
 # Thus, define the average generation length here (default is 10)
 AVG_GEN_LEN=10
 
-OUTDIR="/projects/lotterhos/TPC_sim_results/data"
 echo "Running job ${SLURM_ARRAY_TASK_ID} with \
 N_POP=${N_POP}
 RECOVERY=${RECOVERY}, \
