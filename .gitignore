@@ -24,7 +24,6 @@ __pycache__/
 # In general, don't track data files. 
 data/*
 # List any files that we should keep in github
-# !data/(file to keep)
 !data/gaussian_MEAN_TEMP_20_STDEV_TEMP_10_analytical_info.npz
 !data/gaussian_MEAN_TEMP_20_STDEV_TEMP_10_seed_0.txt
 !data/gaussian_MEAN_TEMP_20_STDEV_TEMP_10_seed_0.trees
