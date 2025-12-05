@@ -7,7 +7,7 @@ Broadly, each workflow goes through at least 2 steps before it's ready for plott
 
 In some cases, we go through additional steps. This is mainly for the simplified cases where temperature distirbution is Gaussian and doesn't change across generations.
 
-3. Average evolutionary trajectories across replicate simulations
+3. Average evolutionary trajectories across replicate simulations and each trajectory along with the average trajectory
 4. Find expected fitness landscape and expected evolutionary trajectories
 
 There are three workflows in current repository. However, one can add a new analysis to the existing pipeline thanks to its modular design. 
@@ -46,7 +46,6 @@ to something like `/home/(your-user-name)/TPC_evolution_SLiM/slim`
 ### Single job example
 `02_run_simulations/example_single_job.sh` submit a single job which runs 4 SLiM simulations in parallel. 
 This approach is useful if you are running small number of simulations (<10). 
-Make sure you request enough number of cpus-per-task (using 5 in this example) so that CPUs are allocated across the simulations efficiently. 
 Similar to the job array example, change the first few lines and path to csv and slim files before running the bash script.
 
 ## 03. Average trajectories and visualize (optional)
