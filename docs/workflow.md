@@ -15,7 +15,7 @@ There are three workflows in current repository. However, one can add a new anal
 ## 01. Preparing parameters
 Make a table of parameters used in master SLiM script, formatted like `01_prepare_input_parameters/gaussian_params.csv`, which was created running `generate_param_df.py` with in the same folder (using `--task=gaussian`). 
 You can create a similar table however you want, using R, Excel, Google sheets, etc. 
-** Important - make sure your file has the same header as the example. **
+***Important - make sure your file has the same header as the example.***
 Read `slim/README.md` for further information of each parameter.
 
 ## 02. Run SLiM
@@ -27,7 +27,7 @@ Read `slim/README.md` for further information of each parameter.
 ```bash
   sbatch 02_run_simulations/example_job_array.sh
 ```
-You will have to modify the bash script based on your user name, partition you want to use and have access to, etc. See how to modify lines starting with `#SBATCH` from [NURC's documentation](https://rc-docs.northeastern.edu/en/latest/runningjobs/slurmarray.html) or other similar websites from your institution. In addition, change
+You will have to modify the bash script based on your user name, partition you want to use and have access to, etc. See how to modify lines starting with `#SBATCH` from [NURC's documentation](https://rc-docs.northeastern.edu/en/latest/runningjobs/slurmarray.html) or a similar website from your institution. In addition, change
 ```
 CSV_FILE="/home/j.min/TPC_evolution_SLiM/scripts/01_prepare_input_parameters/gaussian_params.csv"
 ```
