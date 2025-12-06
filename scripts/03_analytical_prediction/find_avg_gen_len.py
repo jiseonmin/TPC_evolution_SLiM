@@ -4,7 +4,7 @@ import sys
 
 # Find a file that matches OUTPATH and OUTNAME pattern
 def find_avg_gen_len(OUTDIR, OUTNAME):
-    logs = glob.glob(f"{OUTDIR}/{OUTNAME}_seed_*.txt")
+    logs = glob.glob(f"{OUTDIR}/{OUTNAME}*.txt")
 
     # Read first log found
     log = pd.read_csv(logs[0])
