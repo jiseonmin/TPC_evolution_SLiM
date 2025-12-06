@@ -31,8 +31,9 @@ IFS=',' read -r RUNTIME BURNIN LOGINTERVAL N_POP\
  DeltaCTmax OUTDIR OUTNAME  <<< "$PARAMS"
 
 # The analytical model cannot account for changing generation length
-# Thus, define the average generation length here (default is 10)
-AVG_GEN_LEN=10
+# Thus, we will find average generation length from one of the log files
+# and use it for analytical prediction
+AVG_GEN_LEN=$(python find_avg_gen_len.py OUTDIR OUTNAME)
 
 echo "Running job ${SLURM_ARRAY_TASK_ID} with \
 N_POP=${N_POP}
