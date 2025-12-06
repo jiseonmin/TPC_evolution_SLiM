@@ -1,15 +1,29 @@
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-import glob
+import argparse
 import os
 
-# modify path for your task of choice
-params_unique_path = "./01_prepare_input_parameters/gaussian_params_unique.csv"
-params_unique = pd.read_csv(params_unique_path)
+parser = argparse.ArgumentParser(description='Prepare simulation parameters')
+parser.add_argument('--task', type=str, required=True,
+                    choices=['gaussian', 'sine'],
+                    help='Type of simulation task')
 
-# Load full params to match replicates
-params_path = "./01_prepare_input_parameters/gaussian_params.csv"
+args = parser.parse_args()
+
+# Define path to parameter files based on the task (same as python file in step 1 for generating params)
+if args.task == 'gaussian':
+    print("making parameter files for gaussian task.")
+    params_unique_path = "./01_prepare_input_parameters/gaussian_params_unique.csv"
+    params_path = "./01_prepare_input_parameters/gaussian_params.csv"
+
+elif args.task == 'sine':
+    print("making parameter files for sine task.")
+    params_unique_path = "./01_prepare_input_parameters/sine_params_unique.csv"
+    params_path = "./01_prepare_input_parameters/sine_params.csv"
+
+# Load params and full params for replicates
+params_unique = pd.read_csv(params_unique_path)
 params = pd.read_csv(params_path)
 
 # Column titles to extract and plot
