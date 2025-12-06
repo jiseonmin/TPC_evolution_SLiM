@@ -2,7 +2,7 @@
 #SBATCH --job-name=analytical
 #SBATCH --output=/scratch/j.min/slurm_out/job_%A_%a.out
 #SBATCH --error=/scratch/j.min/slurm_err/job_%A_%a.err
-#SBATCH --array=1-9
+#SBATCH --array=1-4
 #SBATCH --time=0-05:00:00
 #SBATCH --mem=4G
 #SBATCH --partition=short
@@ -33,7 +33,8 @@ IFS=',' read -r RUNTIME BURNIN LOGINTERVAL N_POP\
 # The analytical model cannot account for changing generation length
 # Thus, we will find average generation length from one of the log files
 # and use it for analytical prediction
-AVG_GEN_LEN=$(python find_avg_gen_len.py OUTDIR OUTNAME)
+echo "Find a log file from ${OUTDIR} with ${OUTNAME} in its name, calculate average generation length."
+AVG_GEN_LEN=$(python find_avg_gen_len.py ${OUTDIR} ${OUTNAME})
 
 echo "Running job ${SLURM_ARRAY_TASK_ID} with \
 N_POP=${N_POP}
