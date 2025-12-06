@@ -28,7 +28,6 @@ data/*
 !data/gaussian_MEAN_TEMP_20_STDEV_TEMP_10_seed_0.txt
 !data/gaussian_MEAN_TEMP_20_STDEV_TEMP_10_seed_0.trees
 
-# Same for results
-results/figures/*
-# !results/figures/(stuff to track)
-
+# don't track experimental notebooks.
+notebooks/gaussian_experiment.ipynb
+notebooks/sine_experiment.ipynb
