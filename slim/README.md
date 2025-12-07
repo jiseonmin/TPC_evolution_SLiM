@@ -14,7 +14,7 @@ You will see QTNs for B on the chromosome in red and QTNs for CTmin in blue.
 
 (Put screenshot here)
 
-The script will generate `data` folder in the working directory and start recording custom data every generation in `out.txt`. 
+The script will generate `data` folder outside `slim` and start recording custom data every generation in `out.txt`. 
 At the end of the simulation, a tree-sequence `out.trees` will be saved also in `data`. 
 
 ## Running master SLiM script in command line
@@ -47,10 +47,10 @@ Parameters that can be changed in command line are all set up in `Initialize()` 
 - seed (integer): random seed used in SLiM. 
 - RUNTIME (integer): total number of generations that simulation runs for. 
 - BURNIN (integer): number of generations at the beginning during which QTN mutations accumulates without selection. 
-- LOGINTERVAL (integer): information gets logged every LOGINTERVAL generation in a txt file. (integer)
-- N_POP (integer): population size (integer)
-- RECOVERY (T or F): determines how thermal performance in previous days affect the performance in later days of same generation (boolean)
-- GEN_LEN_DEPENDS_ON_TEMP (T or F)
+- LOGINTERVAL (integer): information gets logged every LOGINTERVAL generation in a txt file.
+- N_POP (integer): population size
+- RECOVERY (T or F): determines how thermal performance in previous days affect the performance in later days of same generation
+- GEN_LEN_DEPENDS_ON_TEMP (T or F): If true, length of each generation is determined by the temperature on the first day of a given generation. If false, generation length is equal to FIXED_GEN_GEN for the entirety of the simulation.
 - FIXED_GEN_LEN (integer): number of days in each generation. It is effective only when generation length doesn't depend on temperature.
 - USE_EXTERNAL_TEMP_DATA (T or F)
 - TEMPDATA_PATH (string): only effective if USE_EXTERNAL_TEMP_DATA is T.
@@ -60,8 +60,8 @@ Parameters that can be changed in command line are all set up in `Initialize()` 
 - B_default (integer or float): Default breadth of TPC
 - CTmin_default (integer or float): Default critical thermal minimum of TPC
 - B_critical (integer or float) & DeltaB (integer or float): parameters for fitness component $w_B$, a logistic function penalizing extreme thermal generalist.
-- CTmin_critical (integer or float) & DeltaCTmin (integer or float) : parameters for fitness component $w_CTmin$, a logistic function penalizing extreme cold adaptation.
-- CTmax_critical (integer or float) & DeltaCTmax (integer or float) : parameters for fitness component $w_CTmax$, a logistic function penalizing extreme heat adaptation.
+- CTmin_critical (integer or float) & DeltaCTmin (integer or float) : parameters for fitness component $w_{CTmin}$, a logistic function penalizing extreme cold adaptation.
+- CTmax_critical (integer or float) & DeltaCTmax (integer or float) : parameters for fitness component $w_{CTmax}$, a logistic function penalizing extreme heat adaptation.
 - OUTDIR (string) : path where output files will be saved. If directory doesn't exist, SLiM will create one.
 - OUTNAME (string) : name of the output files, used for both tree-sequence and log file.
 
