@@ -103,8 +103,9 @@ initialize() {
 	
 
 	// Now decide where to save output files and how to name them.
-	// Note that quotation marks are removed from command line, so you should type something like -d OUTDIR=\'./newdir\' 
-	if (!exists("OUTDIR")) defineConstant("OUTDIR", "./data");
+	// Note that quotation marks are removed from command line, so you should type something like -d OUTDIR=\'./newdir\'
+	// Output files will be saved to 'data' folder outside 'slim'.
+	if (!exists("OUTDIR")) defineConstant("OUTDIR", "../data");
 	if (!exists("OUTNAME")) defineConstant("OUTNAME", "out");
 	if (!fileExists(OUTDIR)) {
 		createDirectory(OUTDIR);
