@@ -29,7 +29,7 @@ params_default = {"seed": 13579,
                   "DeltaCTmin": 2,
                   "CTmax_critical": 40,
                   "DeltaCTmax": 0.2,
-                  "OUTDIR": "./data",
+                  "OUTDIR": "../data",
                   "OUTNAME": "out"
                   }
 
