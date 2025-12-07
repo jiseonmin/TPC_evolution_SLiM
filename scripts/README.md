@@ -45,6 +45,7 @@ SLIM_PATH="/home/j.min/TPC_evolution_SLiM/slim"
 to something like `/home/(your-user-name)/TPC_evolution_SLiM/slim`
 
 Similarly, `02_run_simulations/gaussian_job_array.sh` submit a job array for 'gaussian' task. Because the parameter file is much longer (270 lines!), your job array may sit in a queue for a very long time, depending on the partition you are using. You could submit only subset of jobs using `--array=(index of the jobs you want to run)` as described in the RC documentation. 
+***The two example parameter files set OUDIR (directory where SLiM outputs are save) to the Lotterhos lab storage space. If you are not on the NU cluster and/or do not have access to `projects/lotterhos`, you need to change OUDIR to something else. The default value (`../data`) should work.***
 
 ## 03. Expected fitness landscape and expected TPC trajectory (optional)
 Here, we use helper functions from `tpc_functions_oo.py` to calculate expected fitness landscape, optimal B and CTmin that maximizes expected fitness, and path from initial B and CTmin and optimal B and CTmin predicted from solving a differential equation numerically.
