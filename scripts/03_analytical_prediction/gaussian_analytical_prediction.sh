@@ -40,7 +40,7 @@ cd "$ANALYTICS_PATH"
 echo "Find a log file from ${OUTDIR} with ${OUTNAME} in its name, calculate average generation length."
 AVG_GEN_LEN=$(python find_avg_gen_len.py ${OUTDIR} ${OUTNAME})
 
-
+echo "USE_EXTERNAL_TEMP_DATA=${USE_EXTERNAL_TEMP_DATA}"
 if [ ${USE_EXTERNAL_TEMP_DATA}=='T' ]; then
     echo "Find mean and std of temperature from ${TEMPDATA_PATH}"
     read -r MEAN_TEMP STDEV_TEMP <<< "$(python calculate_mean_std_temp.py ${TEMPDATA_PATH})"
