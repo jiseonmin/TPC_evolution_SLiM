@@ -30,10 +30,22 @@ IFS=',' read -r RUNTIME BURNIN LOGINTERVAL N_POP\
  CTmin_critical DeltaCTmin CTmax_critical \
  DeltaCTmax OUTDIR OUTNAME  <<< "$PARAMS"
 
+# Move to analytical folder and run python script for analytical predictions
+ANALYTICS_PATH="/home/j.min/TPC_evolution_SLiM/scripts/03_analytical_prediction"
+cd "$ANALYTICS_PATH"
+
 # The analytical model cannot account for changing generation length
 # Thus, we will find average generation length from one of the log files
 # and use it for analytical prediction
+echo "Find a log file from ${OUTDIR} with ${OUTNAME} in its name, calculate average generation length."
 AVG_GEN_LEN=$(python find_avg_gen_len.py ${OUTDIR} ${OUTNAME})
+
+
+if [ ${USE_EXTERNAL_TEMP_DATA}=='T' ]; then
+    echo "Find mean and std of temperature from ${TEMPDATA_PATH}"
+    read -r MEAN_TEMP STDEV_TEMP <<< "$(python calculate_mean_std_temp.py ${TEMPDATA_PATH})"
+    echo "mean = ${MEAN_TEMP}, stdev = ${STDEV_TEMP}"
+fi
 
 echo "Running job ${SLURM_ARRAY_TASK_ID} with \
 N_POP=${N_POP}
