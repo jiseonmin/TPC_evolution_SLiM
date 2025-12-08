@@ -1,8 +1,9 @@
 import pandas as pd
 import sys
+import os
 
-# tempdata path is relative to slim folder, so add it to sys.path
-sys.path.insert(1, '../../slim')
+# tempdata path is relative to slim folder, so change working directory to 'slim'
+os.chdir('../../slim')
 
 tempdata_path = sys.argv[1]
 tempdata = pd.read_csv(tempdata_path)
