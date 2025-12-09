@@ -6,7 +6,7 @@ import os
 
 parser = argparse.ArgumentParser(description='Prepare simulation parameters')
 parser.add_argument('--task', type=str, required=True,
-                    choices=['gaussian', 'sine'],
+                    choices=['gaussian', 'sine', 'vermont'],
                     help='Type of simulation task')
 
 args = parser.parse_args()
@@ -21,6 +21,11 @@ elif args.task == 'sine':
     print("making parameter files for sine task.")
     params_unique_path = "./01_prepare_input_parameters/sine_params_unique.csv"
     params_path = "./01_prepare_input_parameters/sine_params.csv"
+
+elif args.task == 'vermont':
+    print("making parameter files for vermont task.")
+    params_unique_path = "./01_prepare_input_parameters/VT_params_unique.csv"
+    params_path = "./01_prepare_input_parameters/VT_params.csv"
 
 # Load params and full params for replicates
 params_unique = pd.read_csv(params_unique_path)

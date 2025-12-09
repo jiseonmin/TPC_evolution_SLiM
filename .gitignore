@@ -15,6 +15,8 @@ __pycache__/
 !scripts/01_prepare_input_parameters/gaussian_params_unique.csv
 !scripts/01_prepare_input_parameters/sine_params.csv
 !scripts/01_prepare_input_parameters/sine_params_unique.csv
+!scripts/01_prepare_input_parameters/VT_params.csv
+!scripts/01_prepare_input_parameters/VT_params_unique.csv
 
 
 # save example input file for slim script
