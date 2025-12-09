@@ -227,7 +227,7 @@ def vermont():
                 'OUTDIR': OUTDIR,
                 'RECOVERY': recovery,
                 'GEN_LEN_DEPENDS_ON_TEMP': gen_len_depends_on_temp,
-                'OUTNAME': f"sine_RECOVERY_{recovery}_GEN_LEN_DEPENDS_ON_TEMP_{gen_len_depends_on_temp}"
+                'OUTNAME': f"VT_RECOVERY_{recovery}_GEN_LEN_DEPENDS_ON_TEMP_{gen_len_depends_on_temp}"
                 }
         for key in params_default.keys():
             if key not in new_row.keys():
@@ -244,7 +244,7 @@ def vermont():
     # Drop seed and outname columns
     params_unique = params.drop(columns=['seed', 'OUTNAME']).drop_duplicates().reset_index(drop=True)
     # Add OUTNAME again without seed
-    params_unique['OUTNAME'] = "sine_RECOVERY_" + \
+    params_unique['OUTNAME'] = "VT_RECOVERY_" + \
         params_unique['RECOVERY'].astype(str) + \
             "_GEN_LEN_DEPENDS_ON_TEMP_" + \
                 params_unique['GEN_LEN_DEPENDS_ON_TEMP'].astype(str)
