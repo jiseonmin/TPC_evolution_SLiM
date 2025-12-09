@@ -33,3 +33,4 @@ data/*
 # don't track experimental notebooks.
 notebooks/gaussian_experiment.ipynb
 notebooks/sine_experiment.ipynb
+notebooks/vermont_experiment.ipynb
