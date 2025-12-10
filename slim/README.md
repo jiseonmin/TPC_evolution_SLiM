@@ -46,7 +46,7 @@ In `Initialize()` block, we set up each chromosome of 100 kbp length to have two
 Parameters that can be changed in command line are all set up in `Initialize()` block. They include:
 
 - seed (integer): random seed used in SLiM. 
-- RUNTIME_IF_NO_EXTERNAL_TEMP_DATA (integer): total number of generations that simulation runs for if no external temperature data is used. It gets overwritten if USE_EXTERNAL_TEMP_DATA is true by the number generations that fits into the data. 
+- RUNTIME_IF_NO_EXTERNAL_TEMP_DATA (integer): total number of generations that simulation runs for if no external temperature data is used. If external temperature data is being used, this variable isn't used, and instead runtime is calculated based on number of times first few days of data is repeated and whether number of days per generation depends on temperature.   
 - BURNIN (integer): number of generations at the beginning during which QTN mutations accumulates without selection. 
 - LOGINTERVAL (integer): information gets logged every LOGINTERVAL generation in a txt file.
 - N_POP (integer): population size
@@ -84,7 +84,7 @@ At BURNIN generation, log file is generated with these columns:
 - fitness_mean
 - fitness_sd
 
-Note that cycle is same as generation, since this is a Wright-Fisher simulation. 'day' is the first day of the generation; 0 corresponds to the first temperature in the external temperature data. Temp is the daily temperature on 'day' at population level (i.e. doesn't consider individual variation). Mean and standard deviation of various parameters are calculated among the individuals alived at each generation. 
+Note that cycle is same as generation, since this is a Wright-Fisher simulation. 'day' is the first day of the generation; 0 corresponds to the first temperature in the external temperature data. Temp is the daily temperature on 'day' at population level (i.e. doesn't consider individual variation). Mean and standard deviation of various parameters are calculated among all individuals in a particular generation. 
 
 Todo
 - How to format external daily temperature data - requires a temperature column to be under 'T2M'.
