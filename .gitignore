@@ -22,6 +22,7 @@ __pycache__/
 # save example input file for slim script
 !slim/VT_weather.txt
 !slim/sine.csv
+slim/master_WF_modified.slim
 
 # In general, don't track data files. 
 data/*
