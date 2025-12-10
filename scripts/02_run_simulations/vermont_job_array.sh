@@ -28,7 +28,7 @@ IFS=',' read -r seed RUNTIME_IF_NO_EXTERNAL_TEMP_DATA BURNIN\
     DeltaCTmin CTmax_critical DeltaCTmax\
      OUTDIR OUTNAME  <<< "$PARAMS"
 
-echo "Running job ${SLURM_ARRAY_TASK_ID} \n \
+echo -e "Running job ${SLURM_ARRAY_TASK_ID} \n \
 with seed=${seed} RUNTIME_IF_NO_EXTERNAL_TEMP_DATA=${RUNTIME} BURNIN=${BURNIN} \n \
 LOGINTERVAL=${LOGINTERVAL} N_POP=${N_POP} RECOVERY=${RECOVERY} \n \
  GEN_LEN_DEPENDS_ON_TEMP=${GEN_LEN_DEPENDS_ON_TEMP} \n \
