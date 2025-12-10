@@ -9,7 +9,7 @@ import pandas as pd
 
 # Each parameters have default values as in the master SLiM script. 
 params_default = {"seed": 13579,
-                  "RUNTIME": 200,
+                  "RUNTIME_IF_NO_EXTERNAL_TEMP_DATA": 200,
                   "BURNIN": 50,
                   "LOGINTERVAL": 1,
                   "N_POP": 5000,
@@ -20,7 +20,8 @@ params_default = {"seed": 13579,
                   "TEMPDATA_PATH": "./VT_weather.txt",
                   "MEAN_TEMP": 5,
                   "STDEV_TEMP": 0,
-                  "NUM_REP_TEMP_DATA": 20,
+                  "NUM_DAYS_TO_REPEAT": 365,
+                  "NUM_REP_TEMP_DATA": 2,
                   "B_default": 30,
                   "CTmin_default": 0,
                   "B_critical": 40,
@@ -34,9 +35,9 @@ params_default = {"seed": 13579,
                   }
 
 # We will use the same order of parameters when saving the dataframes
-column_order = ['seed', 'RUNTIME', 'BURNIN', 'LOGINTERVAL', 'N_POP', 'RECOVERY',
+column_order = ['seed', 'RUNTIME_IF_NO_EXTERNAL_TEMP_DATA', 'BURNIN', 'LOGINTERVAL', 'N_POP', 'RECOVERY',
         'GEN_LEN_DEPENDS_ON_TEMP', 'FIXED_GEN_LEN', 'USE_EXTERNAL_TEMP_DATA', 
-        'TEMPDATA_PATH', 'MEAN_TEMP', 'STDEV_TEMP', 'NUM_REP_TEMP_DATA', 'B_default', 
+        'TEMPDATA_PATH', 'MEAN_TEMP', 'STDEV_TEMP', 'NUM_DAYS_TO_REPEAT', 'NUM_REP_TEMP_DATA', 'B_default', 
         'CTmin_default', 'B_critical', 'DeltaB', 'CTmin_critical', 'DeltaCTmin', 
         'CTmax_critical', 'DeltaCTmax', 'OUTDIR', 'OUTNAME']
 
@@ -57,7 +58,7 @@ def gaussian():
     # OUTNAME will reflect the change of these parameters
 
     # List of parameters to change from default values, but keep constant across all simulations
-    RUNTIME = 20_000 # except runtime is edited for one of the mean & stdev combination (see if statement later)
+    RUNTIME_IF_NO_EXTERNAL_TEMP_DATA = 20_000 # except runtime is edited for one of the mean & stdev combination (see if statement later)
     BURNIN = 5000
     B_default = 31
     CTmin_default = 5
@@ -74,13 +75,13 @@ def gaussian():
     for i, (mean_temp, stdev_temp, seed) in enumerate(itertools.product(MEAN_TEMP_list, STDEV_TEMP_list, seed_list)):
         if (mean_temp == 35) & (stdev_temp == 3):
             # needs extra runtime to equilibrate
-            runtime = 40_000
+            runtime_if_no_external_temp_data = 40_000
         else:
-            runtime = RUNTIME
+            runtime_if_no_external_temp_data = RUNTIME_IF_NO_EXTERNAL_TEMP_DATA
 
         new_row = {
                 'seed': seed,
-                'RUNTIME': runtime,
+                'RUNTIME_IF_NO_EXTERNAL_TEMP_DATA': runtime_if_no_external_temp_data,
                 'BURNIN': BURNIN,
                 'GEN_LEN_DEPENDS_ON_TEMP': GEN_LEN_DEPENDS_ON_TEMP,
                 'USE_EXTERNAL_TEMP_DATA': USE_EXTERNAL_TEMP_DATA,
@@ -127,10 +128,9 @@ def sine():
     # OUTNAME will reflect the change of these parameters
 
     # List of parameters to change from default values, but keep constant across all simulations
-    RUNTIME = 20_000
+    NUM_DAYS_TO_REPEAT = 3600
     NUM_REP_TEMP_DATA = 200
-    # runtime will be shorter than the length of repeated temperature data, so simulation will end at
-    # generation = 20_000
+    # number of generation will be around NUM_DAYS_TO_REPEAT * NUM_REP_TEMP_DATA / 30 to / 10
     BURNIN = 5000
     STDEV_TEMP = 1
     B_default = 31
@@ -146,7 +146,7 @@ def sine():
     params_list = []
     for i, (recovery, gen_len_depends_on_temp) in enumerate(itertools.product(RECOVERY_list, GEN_LEN_DEPENDS_ON_TEMP_list)):
         new_row = {
-                'RUNTIME': RUNTIME,
+                'NUM_DAYS_TO_REPEAT': NUM_DAYS_TO_REPEAT,
                 'NUM_REP_TEMP_DATA': NUM_REP_TEMP_DATA,
                 'BURNIN': BURNIN,
                 'STDEV_TEMP': STDEV_TEMP,
@@ -197,10 +197,10 @@ def vermont():
     # OUTNAME will reflect the change of these parameters
 
     # List of parameters to change from default values, but keep constant across all simulations
-    RUNTIME = 60_000
+    # cycle through data from 2015-1-1 to 2020-12-31, 200 times
+    NUM_DAYS_TO_REPEAT = 2192
     NUM_REP_TEMP_DATA = 200
-    # runtime will be shorter than the length of repeated temperature data, so simulation will end at
-    # generation = 20_000
+
     BURNIN = 5000
     STDEV_TEMP = 1
     B_default = 31
@@ -216,7 +216,7 @@ def vermont():
     params_list = []
     for i, (recovery, gen_len_depends_on_temp) in enumerate(itertools.product(RECOVERY_list, GEN_LEN_DEPENDS_ON_TEMP_list)):
         new_row = {
-                'RUNTIME': RUNTIME,
+                'NUM_DAYS_TO_REPEAT': NUM_DAYS_TO_REPEAT,
                 'NUM_REP_TEMP_DATA': NUM_REP_TEMP_DATA,
                 'BURNIN': BURNIN,
                 'STDEV_TEMP': STDEV_TEMP,

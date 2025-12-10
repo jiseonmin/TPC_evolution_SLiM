@@ -22,13 +22,13 @@ LINE_NUM=$((SLURM_ARRAY_TASK_ID + 1))
 PARAMS=$(sed -n "${LINE_NUM}p" "$CSV_FILE")
 
 # Parse CSV - add more variables as needed
-IFS=',' read -r RUNTIME BURNIN LOGINTERVAL N_POP\
- RECOVERY GEN_LEN_DEPENDS_ON_TEMP FIXED_GEN_LEN \
- USE_EXTERNAL_TEMP_DATA TEMPDATA_PATH MEAN_TEMP \
- STDEV_TEMP NUM_REP_TEMP_DATA B_default \
- CTmin_default B_critical DeltaB \
- CTmin_critical DeltaCTmin CTmax_critical \
- DeltaCTmax OUTDIR OUTNAME  <<< "$PARAMS"
+IFS=',' read -r RUNTIME_IF_NO_EXTERNAL_TEMP_DATA BURNIN\
+ LOGINTERVAL N_POP RECOVERY GEN_LEN_DEPENDS_ON_TEMP\
+ FIXED_GEN_LEN USE_EXTERNAL_TEMP_DATA TEMPDATA_PATH\
+  MEAN_TEMP STDEV_TEMP NUM_DAYS_TO_REPEAT NUM_REP_TEMP_DATA B_default\
+   CTmin_default B_critical DeltaB CTmin_critical\
+    DeltaCTmin CTmax_critical DeltaCTmax\
+     OUTDIR OUTNAME  <<< "$PARAMS"
 
 # Move to analytical folder and run python script for analytical predictions
 ANALYTICS_PATH="/home/j.min/TPC_evolution_SLiM/scripts/03_analytical_prediction"

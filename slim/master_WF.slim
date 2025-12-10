@@ -48,8 +48,8 @@ initialize() {
 	// Define default parameter values. Each can be modified when this script is run on command line.
 	params = Dictionary(
 		"seed", 13579,
-		// maximum run time. When using external temperature data, the simulation will run for RUNTIME generations or until it reaches the end of temperature data, whichever is shorter.
-		"RUNTIME", 200,
+		// total number of generations to run simulation if there is no external data. 
+		"RUNTIME_IF_NO_EXTERNAL_TEMP_DATA", 200,
 		// QTN has no effect on fitness for the first BURNIN generations. This is to accumulate some amount of genetic variation before non-neutral dynamics. 
 		"BURNIN", 50,
 		// Time in generation between which SLiM records information in a log file
@@ -67,8 +67,10 @@ initialize() {
 		"MEAN_TEMP", 5,
 		// Individuals of the same day can experience different temperature. Thus, a random noise sampled from Normal(0, STDEV_TEMP) is added to daily temperature to define individual's daily temperature.
 		"STDEV_TEMP", 0,
-		// Number of times to repeat the external temperature data to run simulation longer
-		"NUM_REP_TEMP_DATA", 20,
+		// first to NUM_DAYS_TO_REPEAT-th day temperature will be repeated to run simulation longer
+		"NUM_DAYS_TO_REPEAT", 365,
+		// Number of times to repeat those first few temperatures
+		"NUM_REP_TEMP_DATA", 2,
 		// Starting value of B without any QTNs.
 		"B_default", 30, // default B (WT stands for wild-type since this is B if there is no QTN mutations)
 		// Stating value of CTmin without any QTNs.
@@ -121,8 +123,15 @@ mutationEffect(m3) { return 1.0; }
 	if (USE_EXTERNAL_TEMP_DATA) {
 		// Read weather data, extract temperature
 		temp_data = DataFrame(readCSV(TEMPDATA_PATH)).subsetColumns("T2M").asMatrix();
-		// Repeat the temperature data by NUM_REP_TEMP_DATA and save it as DAILY_TEMP_DATA
-		defineConstant("DAILY_TEMP_DATA", rep(temp_data, NUM_REP_TEMP_DATA));
+		// Cycle through first NUM_DAYS_TO_REPEAT days for NUM_REP_TEMP_DATA times, append the remaining non-repeated data, and save it as DAILY_TEMP_DATA
+		len_original_data = length(temp_data);
+		defineConstant("DAILY_TEMP_DATA", c(rep(temp_data[0:(NUM_DAYS_TO_REPEAT-1)], NUM_REP_TEMP_DATA), temp_data[NUM_DAYS_TO_REPEAT:(len_original_data-1)]));
+		// find actual runtime based on the repeated time-series data
+		defineConstant("RUNTIME", true_runtime());
+		catn("simulation will run for " + RUNTIME + " generations");
+	}
+	else {
+		defineConstant("RUNTIME", RUNTIME_IF_NO_EXTERNAL_TEMP_DATA);
 	}
 
 	// Set up a global parameter for generation length.
@@ -224,32 +233,14 @@ fitnessEffect() {
 }
 
 
-// Note that if simulations finishes before RUNTIME, recording happens for less than 100 generation
+// sample 100 individuals randomly and add their B and CTmin to csv file
 (RUNTIME-100):RUNTIME late() {
 	inds = p1.sampleIndividuals(size=100);
 	defineGlobal("LINES", c(LINES, rep(community.tick + ", ", 100) + inds.getValue('B')
 			+ rep(", ", 100) + inds.getValue('CTmin')));
 }
 
-// If external temp data is used, stop simulation when it runs out of temperature data (looped)
-(BURNIN+1):RUNTIME late() {
-	if (USE_EXTERNAL_TEMP_DATA) {
-		if (DAY_COUNTER + GEN_LEN >= length(DAILY_TEMP_DATA)){
-			// save B and CTmin sample data as csv
-			csvfilename = OUTDIR+"/"+OUTNAME+".csv";
-			if (!writeFile(csvfilename, LINES))
-				stop("Error writing csv file.");
-	
-			// save tree sequence
-			sim.treeSeqOutput(OUTDIR+"/"+OUTNAME+".trees", metadata = PARAMS);
-			sim.simulationFinished();
-		}
-	}
-}
 
-// Record B and CTmin of 100 individuals from generation RUNTIME-100 to RUNTIM
-
-// Otherwise, end simulation when generation = RUNTIME
 RUNTIME late() {
 	// save B and CTmin sample data as csv
 	csvfilename = OUTDIR+"/"+OUTNAME+".csv";
@@ -319,4 +310,23 @@ function (integer)gen_len(float current_temp) {
 		}
 	}
 	return gen_len;
+}
+
+function (integer)true_runtime(void) {
+	gen_counter = 0;
+	day_counter = 0;
+	if (GEN_LEN_DEPENDS_ON_TEMP) {
+		current_gen_len = gen_len(DAILY_TEMP_DATA[day_counter]);
+	}
+	else {
+		current_gen_len = FIXED_GEN_LEN;
+	}
+	while (day_counter + current_gen_len < length(DAILY_TEMP_DATA)) {
+		day_counter = day_counter + current_gen_len;
+		gen_counter = gen_counter + 1;
+		if (GEN_LEN_DEPENDS_ON_TEMP) {
+			current_gen_len = gen_len(DAILY_TEMP_DATA[day_counter]);
+		}
+	}
+	return gen_counter + BURNIN;
 }
