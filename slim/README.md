@@ -84,8 +84,8 @@ At BURNIN generation, log file is generated with these columns:
 - fitness_mean
 - fitness_sd
 
-Note that cycle is same as generation, since this is a Wright-Fisher simulation. 'day' is the first day of the generation; 0 corresponds to the first temperature in the external temperature data. Temp is the daily temperature on 'day' at population level (i.e. doesn't consider individual variation). Mean and standard deviation of various parameters are calculated among all individuals in a particular generation. 
+Note that 'cycle' means generation for Wright-Fisher simulations in SLiM. 'day' is the first day of the generation; 0 corresponds to the first temperature in the external temperature data. Temp is the daily temperature on 'day' at population level (i.e. doesn't consider individual variation). Mean and standard deviation of various parameters are calculated among all individuals present in 'cycle' generation. 
 
 Todo
-- How to format external daily temperature data - requires a temperature column to be under 'T2M'.
-- When simulation finishes: if number of remaining rows in repeated temperature data is less than generation length, simulation ends without using those last few days of data. 
+- How to format external daily temperature data - At least one column with header 'T2M'. Assumes no missing data.
+- When simulation finishes: if number of remaining rows in repeated temperature data is less than generation length expected from the first day of the generation, simulation ends without using those last few days of data. 
