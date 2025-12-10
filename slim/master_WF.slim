@@ -144,11 +144,11 @@ mutationEffect(m3) { return 1.0; }
 
 	sim.addSubpop("p1", N_POP); 
 }
-1:(BURNIN-1) early() {
+1:BURNIN early() {
 	catn("burnin period: " + sim.cycle);
 }
 
-BURNIN early() {
+(BURNIN+1) early() {
 	// Setting up path and log interval
 	log = community.createLogFile(OUTDIR+"/"+OUTNAME+".txt", logInterval=LOGINTERVAL);
 	// define columns for the log file
@@ -167,9 +167,11 @@ BURNIN early() {
 	// recording mean and standard deviation of fitness
 	log.addMeanSDColumns("fitness", "p1.individuals.getValue(\"fitness\");");
 
+	// start a running vector of B and CTmin_critical (will be saved as csv)
+	defineGlobal("LINES", "cycle, B, CTmin");
 }
 
-BURNIN:RUNTIME early() {
+(BURNIN+1):RUNTIME early() {
 	catn("first day of current generation " + DAY_COUNTER);
 	catn("generation length " + GEN_LEN);
 	// find daily temperatures at population level
@@ -222,13 +224,21 @@ fitnessEffect() {
 }
 
 
+// Note that if simulations finishes before RUNTIME, recording happens for less than 100 generation
+(RUNTIME-100):RUNTIME late() {
+	inds = p1.sampleIndividuals(size=100);
+	defineGlobal("LINES", c(LINES, rep(community.tick + ", ", 100) + inds.getValue('B')
+			+ rep(", ", 100) + inds.getValue('CTmin')));
+}
+
 // If external temp data is used, stop simulation when it runs out of temperature data (looped)
-BURNIN:RUNTIME late() {
+(BURNIN+1):RUNTIME late() {
 	if (USE_EXTERNAL_TEMP_DATA) {
 		if (DAY_COUNTER + GEN_LEN >= length(DAILY_TEMP_DATA)){
-			// add final B and CTmin of current population to the metadata
-			PARAMS.setValue("Bs_final", p1.individuals.getValue("B"));
-			PARAMS.setValue("CTmins_final", p1.individuals.getValue("CTmin"));
+			// save B and CTmin sample data as csv
+			csvfilename = OUTDIR+"/"+OUTNAME+".csv";
+			if (!writeFile(csvfilename, LINES))
+				stop("Error writing csv file.");
 	
 			// save tree sequence
 			sim.treeSeqOutput(OUTDIR+"/"+OUTNAME+".trees", metadata = PARAMS);
@@ -237,11 +247,14 @@ BURNIN:RUNTIME late() {
 	}
 }
 
+// Record B and CTmin of 100 individuals from generation RUNTIME-100 to RUNTIM
+
 // Otherwise, end simulation when generation = RUNTIME
 RUNTIME late() {
-	// add final B and CTmin of current population to the metadata
-	PARAMS.setValue("Bs_final", p1.individuals.getValue("B"));
-	PARAMS.setValue("CTmins_final", p1.individuals.getValue("CTmin"));
+	// save B and CTmin sample data as csv
+	csvfilename = OUTDIR+"/"+OUTNAME+".csv";
+	if (!writeFile(csvfilename, LINES))
+		stop("Error writing csv file.");
 	
 	// save tree sequence
 	sim.treeSeqOutput(OUTDIR+"/"+OUTNAME+".trees", metadata = PARAMS);
