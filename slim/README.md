@@ -16,6 +16,7 @@ You will see QTNs for B on the chromosome in red and QTNs for CTmin in blue.
 
 The script will generate `data` folder outside `slim` and start recording custom data every generation in `out.txt`. 
 At the end of the simulation, a tree-sequence `out.trees` will be saved also in `data`. 
+In addition, `out.csv` contains list of B and CTmin of 100 randomly sampled individuals in the last 100 generations of the simulation.
 
 ## Running master SLiM script in command line
 If you want to use default parameters as in the SLiM script, run:
@@ -45,7 +46,7 @@ In `Initialize()` block, we set up each chromosome of 100 kbp length to have two
 Parameters that can be changed in command line are all set up in `Initialize()` block. They include:
 
 - seed (integer): random seed used in SLiM. 
-- RUNTIME (integer): total number of generations that simulation runs for. 
+- RUNTIME_IF_NO_EXTERNAL_TEMP_DATA (integer): total number of generations that simulation runs for if no external temperature data is used. It gets overwritten if USE_EXTERNAL_TEMP_DATA is true by the number generations that fits into the data. 
 - BURNIN (integer): number of generations at the beginning during which QTN mutations accumulates without selection. 
 - LOGINTERVAL (integer): information gets logged every LOGINTERVAL generation in a txt file.
 - N_POP (integer): population size
@@ -56,7 +57,8 @@ Parameters that can be changed in command line are all set up in `Initialize()` 
 - TEMPDATA_PATH (string): only effective if USE_EXTERNAL_TEMP_DATA is T.
 - MEAN_TEMP (integer or float): daily temperature at population level. Only used if USE_EXTERNAL_TEMP_DATA is F.
 - STDEV_TEMP (integer or float): controls the temperature variation between individuals in the same population the same day. It is used with or without external temperature data.
-- NUM_REP_TEMP_DATA (integer): External temperature data is looped this number of times to run simulation for longer.
+- NUM_DAYS_TO_REPEAT (integer): First NUM_DAYS_TO_REPEAT of the external temperature data is repeated to run simulation longer if temperature data is limited.
+- NUM_REP_TEMP_DATA (integer): After this number of cycling through the first few days, the remaining temperature data is used just once till the end of simulation. 
 - B_default (integer or float): Default breadth of TPC
 - CTmin_default (integer or float): Default critical thermal minimum of TPC
 - B_critical (integer or float) & DeltaB (integer or float): parameters for fitness component $w_B$, a logistic function penalizing extreme thermal generalist.
@@ -86,3 +88,4 @@ Note that cycle is same as generation, since this is a Wright-Fisher simulation.
 
 Todo
 - How to format external daily temperature data - requires a temperature column to be under 'T2M'.
+- When simulation finishes: if number of remaining rows in repeated temperature data is less than generation length, simulation ends without using those last few days of data. 
