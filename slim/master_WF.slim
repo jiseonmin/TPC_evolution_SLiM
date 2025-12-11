@@ -125,7 +125,14 @@ mutationEffect(m3) { return 1.0; }
 		temp_data = DataFrame(readCSV(TEMPDATA_PATH)).subsetColumns("T2M").asMatrix();
 		// Cycle through first NUM_DAYS_TO_REPEAT days for NUM_REP_TEMP_DATA times, append the remaining non-repeated data, and save it as DAILY_TEMP_DATA
 		len_original_data = length(temp_data);
-		defineConstant("DAILY_TEMP_DATA", c(rep(temp_data[0:(NUM_DAYS_TO_REPEAT-1)], NUM_REP_TEMP_DATA), temp_data[NUM_DAYS_TO_REPEAT:(len_original_data-1)]));
+		repeated_data = rep(temp_data[0:(NUM_DAYS_TO_REPEAT-1)], NUM_REP_TEMP_DATA);
+		if (NUM_DAYS_TO_REPEAT < len_original_data) {
+			remaining_data = temp_data[NUM_DAYS_TO_REPEAT:(len_origiinal_data-1)];
+		}
+		else {
+			remaining_data = NULL;
+		}
+		defineConstant("DAILY_TEMP_DATA", c(repeated_data, remaining_data));
 		// find actual runtime based on the repeated time-series data
 		defineConstant("RUNTIME", true_runtime());
 		catn("simulation will run for " + RUNTIME + " generations");
