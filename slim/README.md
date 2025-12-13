@@ -37,7 +37,7 @@ If you want to read more about how to launch SLiM in command line and run jobs i
 
 ## Detailed explantion on SLiM script (work in progress)
 `master_WT.slim` simulates TPC evolution in a fixed thermal environment or using an external daily temperature data.
-It is a Wright-Fisher simulation (i.e. non-overlapping generation, population is replaced every generation via binomial sampling weighted by fitness) where two key parameters of thermal performance curve (TPC), B and CTmin, are polygenic traits. Fitness is determined by the individual's TPC and a list of daily temperatures experienced by the individual during current generation.
+It is a Wright-Fisher simulation (i.e. non-overlapping generation, population is replaced every generation via binomial sampling weighted by fitness) where two key parameters of thermal performance curve (TPC), B and CTmin, are quantitative traits. Fitness is determined by the individual's TPC, a list of daily temperatures in population level (`DAILY_TEMPS_AT_CURRENT_GEN`, see lines 194 to 202), how much individual temperature deviates from the population mean, and environmental noise (`epsilon` in line 217).
 
 In `Initialize()` block, we set up each chromosome of 100 kbp length to have two neutral regions (each 20kbp long) flanking a QTN region (60kbp long). There are two types of mutations, each for B and CTmin (labeled 'm2', m3'). Neutral mutations (conventionally labeled 'm1') are not simulated in SLiM because we are using tree-sequence recording, and they can be added post-SLiM using `pyslim`. Each mutation arising in QTN region is either QTN for B or CTmin by 50-50 chance, and its effect size is sampled from a Gaussian distribution with zero mean and variance of 0.05. QTN mutation arises with rate of 1e-7. The QTN region is divided into 12 linkage groups, and outside the borders between the linkage groups, recombination happens with uniform rate of 1e-8. 
 
@@ -46,26 +46,26 @@ In `Initialize()` block, we set up each chromosome of 100 kbp length to have two
 Parameters that can be changed in command line are all set up in `Initialize()` block. They include:
 
 - seed (integer): random seed used in SLiM. 
-- RUNTIME_IF_NO_EXTERNAL_TEMP_DATA (integer): total number of generations that simulation runs for if no external temperature data is used. If external temperature data is being used, this variable isn't used, and instead runtime is calculated based on number of times first few days of data is repeated and whether number of days per generation depends on temperature.   
-- BURNIN (integer): number of generations at the beginning during which QTN mutations accumulates without selection. 
+- RUNTIME_IF_NO_EXTERNAL_TEMP_DATA (integer): total number of generations that simulation runs for if no external temperature data is used. If external temperature data is being used, this variable isn't used: instead, runtime is calculated based on the number of times first few days of data is repeated and whether number of days per generation depends on temperature--see lines 123 to 139 and a custom function `true_runtime` defined in line 322 to 229.
+- BURNIN (integer): number of generations at the beginning during which QTN mutations accumulates neutrally--see `fitnessEffect()` block (lines 215 to 240) where fitness is 1 for all individuals while `sim.cycle <= BURNIN`.
 - LOGINTERVAL (integer): information gets logged every LOGINTERVAL generation in a txt file.
-- N_POP (integer): population size
-- RECOVERY (T or F): determines how thermal performance in previous days affect the performance in later days of same generation
-- GEN_LEN_DEPENDS_ON_TEMP (T or F): If true, length of each generation is determined by the temperature on the first day of a given generation. If false, generation length is equal to FIXED_GEN_GEN for the entirety of the simulation.
+- N_POP (integer): population size in the Wright-Fisher simulation (i.e. not necessarily equal to census population size). In our current simulation, the population stays constant.
+- RECOVERY (T or F): determines how thermal performance in previous days affect the performance in later days of same generation--see line 285 to 300 in `fitness_function()`. 
+- GEN_LEN_DEPENDS_ON_TEMP (T or F): If true, length of each generation is determined by the temperature on the first day of a given generation--see a custom function `gen_len()` in lines 307 to 320 to see how temperature on the first day of a generation maps to the length of generation. If false, generation length is equal to FIXED_GEN_GEN for the entirety of the simulation.
 - FIXED_GEN_LEN (integer): number of days in each generation. It is effective only when generation length doesn't depend on temperature.
-- USE_EXTERNAL_TEMP_DATA (T or F)
+- USE_EXTERNAL_TEMP_DATA (T or F) : If true, a daily temperature data is imported from TEMPDATA_PATH. As in two example input files, `sine.csv` and `VT_weather.txt`, daily temperature is recorded in a column with header "T2M"--see line 125.
 - TEMPDATA_PATH (string): only effective if USE_EXTERNAL_TEMP_DATA is T.
 - MEAN_TEMP (integer or float): daily temperature at population level. Only used if USE_EXTERNAL_TEMP_DATA is F.
-- STDEV_TEMP (integer or float): controls the temperature variation between individuals in the same population the same day. It is used with or without external temperature data.
-- NUM_DAYS_TO_REPEAT (integer): First NUM_DAYS_TO_REPEAT of the external temperature data is repeated to run simulation longer if temperature data is limited.
-- NUM_REP_TEMP_DATA (integer): After this number of cycling through the first few days, the remaining temperature data is used just once till the end of simulation. 
+- STDEV_TEMP (integer or float): controls the temperature variation between individuals in the same population the same day. 
+- NUM_DAYS_TO_REPEAT (integer): First NUM_DAYS_TO_REPEAT of the external temperature data is repeated to run simulation longer if temperature data is limited--see lines 126 to 135.
+- NUM_REP_TEMP_DATA (integer): After this number of cycling through the first few days, the remaining temperature data is used just once till the end of simulation--see lines 126 to 135.
 - B_default (integer or float): Default breadth of TPC
 - CTmin_default (integer or float): Default critical thermal minimum of TPC
 - B_critical (integer or float) & DeltaB (integer or float): parameters for fitness component $w_B$, a logistic function penalizing extreme thermal generalist.
 - CTmin_critical (integer or float) & DeltaCTmin (integer or float) : parameters for fitness component $w_{CTmin}$, a logistic function penalizing extreme cold adaptation.
 - CTmax_critical (integer or float) & DeltaCTmax (integer or float) : parameters for fitness component $w_{CTmax}$, a logistic function penalizing extreme heat adaptation.
 - OUTDIR (string) : path where output files will be saved. If directory doesn't exist, SLiM will create one.
-- OUTNAME (string) : name of the output files, used for both tree-sequence and log file.
+- OUTNAME (string) : name of the output files, including a tree-sequence (`[OUTNAME].trees`), log file (`[OUTNAME].txt`), and a csv file containing sample $B$ and $CTmin$ (`[OUTNAME].csv`).
 
 All parameters except for OUTDIR and OUTNAME are saved as metadata in tree-sequence output at the end of simulation.
 
@@ -86,6 +86,4 @@ At BURNIN generation, log file is generated with these columns:
 
 Note that 'cycle' means generation for Wright-Fisher simulations in SLiM. 'day' is the first day of the generation; 0 corresponds to the first temperature in the external temperature data. Temp is the daily temperature on 'day' at population level (i.e. doesn't consider individual variation). Mean and standard deviation of various parameters are calculated among all individuals present in 'cycle' generation. 
 
-Todo
-- How to format external daily temperature data - At least one column with header 'T2M'. Assumes no missing data.
-- When simulation finishes: if number of remaining rows in repeated temperature data is less than generation length expected from the first day of the generation, simulation ends without using those last few days of data. 
+Lastly, in the last 100 generations of simulation, 100 individuals are randomly drawn from the population, and their $B$ and $CTmin$ are appended to a vector named `LINES`, which is saved as a csv file at the end of the simulation. 
