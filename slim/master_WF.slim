@@ -184,7 +184,7 @@ mutationEffect(m3) { return 1.0; }
 	log.addMeanSDColumns("fitness", "p1.individuals.getValue(\"fitness\");");
 
 	// start a running vector of B and CTmin_critical (will be saved as csv)
-	defineGlobal("LINES", "cycle, B, CTmin");
+	defineGlobal("LINES", "cycle,B,CTmin");
 }
 
 (BURNIN+1):RUNTIME early() {
@@ -243,8 +243,8 @@ fitnessEffect() {
 // sample 100 individuals randomly and add their B and CTmin to csv file
 (RUNTIME-100):RUNTIME late() {
 	inds = p1.sampleIndividuals(size=100);
-	defineGlobal("LINES", c(LINES, rep(community.tick + ", ", 100) + inds.getValue('B')
-			+ rep(", ", 100) + inds.getValue('CTmin')));
+	defineGlobal("LINES", c(LINES, rep(community.tick + ",", 100) + inds.getValue('B')
+			+ rep(",", 100) + inds.getValue('CTmin')));
 }
 
 
