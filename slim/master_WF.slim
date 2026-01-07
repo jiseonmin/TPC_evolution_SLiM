@@ -127,7 +127,7 @@ mutationEffect(m3) { return 1.0; }
 		len_original_data = length(temp_data);
 		repeated_data = rep(temp_data[0:(NUM_DAYS_TO_REPEAT-1)], NUM_REP_TEMP_DATA);
 		if (NUM_DAYS_TO_REPEAT < len_original_data) {
-			remaining_data = temp_data[NUM_DAYS_TO_REPEAT:(len_origiinal_data-1)];
+			remaining_data = temp_data[NUM_DAYS_TO_REPEAT:(len_original_data-1)];
 		}
 		else {
 			remaining_data = NULL;
