@@ -22,8 +22,8 @@ params_default = {"seed": 13579,
                   "STDEV_TEMP": 0,
                   "NUM_DAYS_TO_REPEAT": 365,
                   "NUM_REP_TEMP_DATA": 2,
-                  "B_default": 30,
-                  "CTmin_default": 0,
+                  "B_default": 31,
+                  "CTmin_default": 5,
                   "B_critical": 40,
                   "DeltaB": 2,
                   "CTmin_critical": 0,
@@ -60,8 +60,6 @@ def gaussian():
     # List of parameters to change from default values, but keep constant across all simulations
     RUNTIME_IF_NO_EXTERNAL_TEMP_DATA = 20_000 # except runtime is edited for one of the mean & stdev combination (see if statement later)
     BURNIN = 5000
-    B_default = 31
-    CTmin_default = 5
     GEN_LEN_DEPENDS_ON_TEMP = 'F'
     USE_EXTERNAL_TEMP_DATA = 'F'
     OUTDIR = "/projects/lotterhos/TPC_evol_SLiM"
@@ -87,8 +85,6 @@ def gaussian():
                 'USE_EXTERNAL_TEMP_DATA': USE_EXTERNAL_TEMP_DATA,
                 'MEAN_TEMP': mean_temp,
                 'STDEV_TEMP': stdev_temp,
-                'B_default': B_default,
-                'CTmin_default': CTmin_default,
                 'OUTDIR': OUTDIR,
                 'OUTNAME': f"gaussian_MEAN_TEMP_{mean_temp}_STDEV_TEMP_{stdev_temp}_seed_{seed}"
                 }
@@ -133,8 +129,6 @@ def sine():
     # number of generation will be around NUM_DAYS_TO_REPEAT * NUM_REP_TEMP_DATA / 30 to / 10
     BURNIN = 5000
     STDEV_TEMP = 1
-    B_default = 31
-    CTmin_default = 5
     N_POP = 50_000 # using bigger population to see tracking more clearly
     TEMPDATA_PATH = "./sine.csv"
     OUTDIR = "/projects/lotterhos/TPC_evol_SLiM"
@@ -150,8 +144,6 @@ def sine():
                 'NUM_REP_TEMP_DATA': NUM_REP_TEMP_DATA,
                 'BURNIN': BURNIN,
                 'STDEV_TEMP': STDEV_TEMP,
-                'B_default': B_default,
-                'CTmin_default': CTmin_default,
                 'N_POP': N_POP,
                 'TEMPDATA_PATH': TEMPDATA_PATH,
                 'OUTDIR': OUTDIR,
@@ -203,8 +195,6 @@ def vermont():
 
     BURNIN = 5000
     STDEV_TEMP = 1
-    B_default = 31
-    CTmin_default = 5
     N_POP = 5000
     TEMPDATA_PATH = "./VT_weather.txt"
     OUTDIR = "/projects/lotterhos/TPC_evol_SLiM"
@@ -220,8 +210,6 @@ def vermont():
                 'NUM_REP_TEMP_DATA': NUM_REP_TEMP_DATA,
                 'BURNIN': BURNIN,
                 'STDEV_TEMP': STDEV_TEMP,
-                'B_default': B_default,
-                'CTmin_default': CTmin_default,
                 'N_POP': N_POP,
                 'TEMPDATA_PATH': TEMPDATA_PATH,
                 'OUTDIR': OUTDIR,
@@ -249,11 +237,72 @@ def vermont():
             "_GEN_LEN_DEPENDS_ON_TEMP_" + \
                 params_unique['GEN_LEN_DEPENDS_ON_TEMP'].astype(str)
     # Save as csv file
-    params_unique.to_csv(param_unique_filename, index=False)    
+    params_unique.to_csv(param_unique_filename, index=False)
+
+def kentucky():
+    '''
+    Use KY NASA POWER data for mean temperature,
+    and add random fluctuation with stdev = 1
+    '''
+    param_filename = 'KY_params.csv'
+    param_unique_filename = 'KY_params_unique.csv'
+
+    # List of parameters to change from default values, but keep constant across all simulations
+    # cycle through data from 1981-1-1 to 1986-12-31, 200 times
+    NUM_DAYS_TO_REPEAT = 2191
+    NUM_REP_TEMP_DATA = 200
+
+    # List of params to scan
+    GEN_LEN_DEPENDS_ON_TEMP_list = ['T', 'F']
+
+    RECOVERY = 'F'
+    BURNIN = 5000
+    STDEV_TEMP = 1
+    N_POP = 5000
+    TEMPDATA_PATH = "./KY_timeseries.csv"
+    OUTDIR = "/projects/lotterhos/TPC_evol_SLiM"
+ 
+    # Other params will use values from params_default
+
+    # Loop through all combinations of parameters to scan
+    # For each combination, create a new parameter dictionary, add it to the parameter list
+    params_list = []
+    for i, gen_len_depends_on_temp in enumerate(GEN_LEN_DEPENDS_ON_TEMP_list):
+        new_row = {
+                'NUM_DAYS_TO_REPEAT': NUM_DAYS_TO_REPEAT,
+                'NUM_REP_TEMP_DATA': NUM_REP_TEMP_DATA,
+                'BURNIN': BURNIN,
+                'STDEV_TEMP': STDEV_TEMP,
+                'N_POP': N_POP,
+                'TEMPDATA_PATH': TEMPDATA_PATH,
+                'OUTDIR': OUTDIR,
+                'RECOVERY': RECOVERY,
+                'GEN_LEN_DEPENDS_ON_TEMP': gen_len_depends_on_temp,
+                'OUTNAME': f"KY_GEN_LEN_DEPENDS_ON_TEMP_{gen_len_depends_on_temp}"
+                }
+        for key in params_default.keys():
+            if key not in new_row.keys():
+                new_row[key] = params_default[key]
+        params_list.append(new_row)
+
+    # Save the parameter list
+    params = pd.DataFrame(params_list)
+    # Re-order columns (matches the order in slurm script in next step)
+    params = params[column_order]
+    # Save as csv file
+    params.to_csv(param_filename, index=False)
+
+    # Drop seed and outname columns
+    params_unique = params.drop(columns=['seed', 'OUTNAME']).drop_duplicates().reset_index(drop=True)
+    # Add OUTNAME again without seed
+    params_unique['OUTNAME'] = "KY_GEN_LEN_DEPENDS_ON_TEMP_" + \
+                params_unique['GEN_LEN_DEPENDS_ON_TEMP'].astype(str)
+    # Save as csv file
+    params_unique.to_csv(param_unique_filename, index=False)       
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Prepare simulation parameters')
     parser.add_argument('--task', type=str, required=True,
-                       choices=['gaussian', 'sine', 'vermont'],
+                       choices=['gaussian', 'sine', 'vermont', 'kentucky'],
                        help='Type of simulation task')
     
     args = parser.parse_args()
@@ -266,3 +315,6 @@ if __name__ == "__main__":
     elif args.task == 'vermont':
         print("making parameter files for vermont task.")
         vermont()
+    elif args.task == 'kentucky':
+        print("making parameter files for kentucky task.")
+        kentucky()
