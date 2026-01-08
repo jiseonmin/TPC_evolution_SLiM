@@ -25,27 +25,26 @@ These are used in step 3 and 4 and are not necessary for running SLiM on cluster
 
 ## 02. Run SLiM
 
-`02_run_simulations/sine_job_array.sh` is used to submit jobs defined in `01_prepare_input_parameters/sine_params.csv` as job array on Northeastern Explorer cluster. It launch 4 jobs, each running one SLiM simulation. 
-
+Here run a bash script with the name of the parameter file you would like to use. For instance, for the sine task, run:
 ```bash
-  sbatch 02_run_simulations/sine_job_array.sh
+chmod +x submit_jobs.sh
+./submit_jobs.sh sine_params.csv
 ```
-You will have to modify the bash script based on your user name, partition you want to use and have access to, etc. See how to modify lines starting with `#SBATCH` from [NURC's documentation](https://rc-docs.northeastern.edu/en/latest/runningjobs/slurmarray.html) or a similar website from your institution. In addition, change
+You should see something like:
 ```
-CSV_FILE="/home/j.min/TPC_evolution_SLiM/scripts/01_prepare_input_parameters/sine_params.csv"
+Submitting array job with 4 tasks for file: /home/[username]/TPC_evolution_SLiM/scripts/01_prepare_input_parameters/sine_params.csv
+Submitted batch job [job number]
 ```
-using the path to parameter file you will use. It will be like
+Note that You will have to modify the bash script based on your username, partition you want to use and have access to, etc. See how to modify lines starting with `#SBATCH` from [NURC's documentation](https://rc-docs.northeastern.edu/en/latest/runningjobs/slurmarray.html) or a similar website from your institution. In addition, you should modify the path to csv file based on where the project folder is. For example, if you cloned this repository in home directory, you need to use
+```bash
+CSV_DIR="/home/(your-username)/TPC_evolution_SLiM/scripts/01_prepare_input_parameters"
 ```
-CSV_FILE="/home/(your-user-name)/TPC_evolution_SLiM/scripts/01_prepare_input_parameters/(your-csv-file).csv"
+in `submit_job_array.sh`. Similarly, you should also change the path to slim folder
+```bash
+SLIM_PATH="/home/(your-username)/TPC_evolution_SLiM/slim"
 ```
-Also change the path to SLiM script:
-```
-SLIM_PATH="/home/j.min/TPC_evolution_SLiM/slim"
-```
-to something like `/home/(your-user-name)/TPC_evolution_SLiM/slim`
-
-Similarly, `02_run_simulations/gaussian_job_array.sh` submit a job array for 'gaussian' task. Because the parameter file is much longer (270 lines!), your job array may sit in a queue for a very long time, depending on the partition you are using. You could submit only subset of jobs using `--array=(index of the jobs you want to run)` as described in the RC documentation. 
-***The two example parameter files set OUDIR (directory where SLiM outputs are save) to the Lotterhos lab storage space. If you are not on the NU cluster and/or do not have access to `projects/lotterhos`, you need to change OUDIR to something else. The default value (`../data`) should work.***
+Finally, you might want to modify `submit_job_array.sh` to run simulations using only a subset of parameters if the parameter file is too long (e.g. gaussian example has 270 lines). For instance, `sbatch --array=3-10 run_simulation.sh "$CSV_FILE"` to launch 8 jobs, using line 3 to 10 of the csv file.  
+***The example parameter files set OUDIR (directory where SLiM outputs are save) to the Lotterhos lab storage space. If you are not on the NU cluster and/or do not have access to `projects/lotterhos`, you need to change OUDIR to something else. The default value (`../data`) should work.***
 
 ## 03. Expected fitness landscape and expected TPC trajectory (optional)
 Here, we use helper functions from `tpc_functions_oo.py` to calculate expected fitness landscape, optimal B and CTmin that maximizes expected fitness, and path from initial B and CTmin and optimal B and CTmin predicted from solving a differential equation numerically.
