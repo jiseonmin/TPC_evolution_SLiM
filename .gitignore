@@ -41,8 +41,5 @@ notebooks/gaussian_experiment.ipynb
 notebooks/sine_experiment.ipynb
 notebooks/vermont_experiment.ipynb
 
-# don't track notebook for making Fig 1 components (yet)
-notebooks/Fig1_components.ipynb
-
 # don't track figures folder (yet)
 figures/
