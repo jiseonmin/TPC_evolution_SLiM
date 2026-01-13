@@ -24,6 +24,13 @@ Min J, Chapman Z, ..., & Lotterhos KE. A general model for the evolution of ther
 
 Now you are ready to run simulations!
 
+3. (Optional) Set up environment for jupyter notebook
+To run any jupyter notebooks in `notebooks`, create a Jupyter kernel based on the conda environment
+```bash
+   python -m ipykernel install --user --name tpc_evo_slim
+```
+Then select kernel named `tpc_evo_slim`.
+
 ## Running simulations
 
 See `scripts/README.md` for detailed instructions. 
