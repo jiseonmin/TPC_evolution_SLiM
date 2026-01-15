@@ -15,14 +15,14 @@ initialize() {
 	
 	// QTN2 (CTmin) has effect size sampled from a normal distribution with mean and standard deviation defined by the second entry of QTN_mean and QTN_var
 	// Note that 'sqrt' used because "n" uses standard deviation not variance
-	initializeMutationType("m3", 0.5, "n", QTN_mean[1], sqrt(QTN_var[1])); 
+	initializeMutationType("m3", 0.5, "n", QTN_mean[1], sqrt(QTN_var[1]));
 	m3.convertToSubstitution = F;
 	// QTN2 will look blue in SLiMgui
 	m3.color = "blue";
-
+	
 	// Environmental noise sampled from a gaussian with zero mean and variance = ENV_var gets added to the sum of effect sizes of QTNs to determine B and CTmin
 	defineConstant("ENV_var", 0.5);
-
+	
 	// The genome is 100kbp long.
 	// first 20k and last 2k segments are mutation-free in the forward-simulation because they are neutral loci. The neutral mutations can be overlayed on top of the tree sequence after the SLiM simulation. This is much faster than adding neutral mutation during the SLiM simulation.
 	defineConstant("MU", 1e-7);
@@ -31,7 +31,7 @@ initialize() {
 	// Middle section of the genome is our "QTN region", where each mutation has a 50-50 chance of either being a QTN for CTmin or B.
 	initializeGenomicElementType("g2", c(m2, m3), c(0.5, 0.5));
 	initializeGenomicElement(g2, 20001, 80000);
-
+	
 	// The QTN region is divided into 12 linkage groups of equal length, and recombination happens at uniform rate otherwise
 	defineConstant("RECOMBINATION_RATE", 1e-8);
 	defineConstant("NUM_LINKAGE_GROUPS", 12);
@@ -43,8 +43,8 @@ initialize() {
 	}
 	ends = c(ends, 99999);
 	initializeRecombinationRate(rates, ends);
-
-
+	
+	
 	// Define default parameter values. Each can be modified when this script is run on command line.
 	params = Dictionary(
 		"seed", 13579,
@@ -57,12 +57,12 @@ initialize() {
 		// population size throughout the simulation 
 		"N_POP", 5000,
 		// Use recovery model if True, use no-recovery model if False (default) to determine fitness for each generation.
-		"RECOVERY", F, 
+		"RECOVERY", F,
 		// If True, generation length depends on temperature at the beginning of each generation. If False (default), generation length is FIXED_GEN_LEN throughout the simulation. 
-		"GEN_LEN_DEPENDS_ON_TEMP", T, 
+		"GEN_LEN_DEPENDS_ON_TEMP", T,
 		"FIXED_GEN_LEN", 10,
 		// Use temperature data at TEMPDATA_PATH for daily temperature if True (default). If false, assume daily temperature (at population level) = MEAN_TEMP.
-		"USE_EXTERNAL_TEMP_DATA", T, 
+		"USE_EXTERNAL_TEMP_DATA", T,
 		"TEMPDATA_PATH", "./VT_weather.txt",
 		"MEAN_TEMP", 5,
 		// Individuals of the same day can experience different temperature. Thus, a random noise sampled from Normal(0, STDEV_TEMP) is added to daily temperature to define individual's daily temperature.
@@ -75,11 +75,11 @@ initialize() {
 		"B_default", 31, // default B (WT stands for wild-type since this is B if there is no QTN mutations)
 		// Stating value of CTmin without any QTNs.
 		"CTmin_default", 5, // default CTmin
-
+		
 		//////////////////////////
 		// params for TPC model.//
 		////////////////////////// 
-		"B_critical", 40, 
+		"B_critical", 40,
 		"DeltaB", 2,
 		"CTmin_critical", 0,
 		"DeltaCTmin", 2,
@@ -88,22 +88,22 @@ initialize() {
 		////////////////////////////////
 		// end of params for TPC model//
 		////////////////////////////////
-
-	); 
+		
+		);
 	for (k in params.allKeys) {
 		// if the parameter is not modified with -d, get default value from dictionary.
 		if (!exists(k)) {
-			defineConstant(k, params.getValue(k));		
+			defineConstant(k, params.getValue(k));
 		}
 		// if you used -d, replace value in params dictionary with the input value
 		else {
 			params.setValue(k, executeLambda(paste(c(k, ";"), sep='')));
 		}
-	}	
+	}
 	defineConstant("PARAMS", params);
 	setSeed(seed);
 	
-
+	
 	// Now decide where to save output files and how to name them.
 	// Note that quotation marks are removed from command line, so you should type something like -d OUTDIR=\'./newdir\'
 	// Output files will be saved to 'data' folder outside 'slim'.
@@ -140,14 +140,14 @@ mutationEffect(m3) { return 1.0; }
 	else {
 		defineConstant("RUNTIME", RUNTIME_IF_NO_EXTERNAL_TEMP_DATA);
 	}
-
+	
 	// Set up a global parameter for generation length.
 	if (GEN_LEN_DEPENDS_ON_TEMP) {
 		// if generation length is temperature dependent and there is external temperature data, use the first temperature to set the initial generation length
-		if (USE_EXTERNAL_TEMP_DATA) {	
+		if (USE_EXTERNAL_TEMP_DATA) {
 			first_temp = DAILY_TEMP_DATA[DAY_COUNTER];
 			defineGlobal("GEN_LEN", gen_len(first_temp));
-			}
+		}
 		// if generation length is temperature dependent but there is no external temperature being used, use the mean temperature to set up the generation length. This will remain constant throughout the simulation.
 		else {
 			defineGlobal("GEN_LEN", gen_len(asFloat(MEAN_TEMP)));
@@ -155,10 +155,10 @@ mutationEffect(m3) { return 1.0; }
 	}
 	// if generation length is not temperature dependent, set it to FIXED_GEN_LEN (remains constant throughout the simulation).
 	else {
-		defineGlobal("GEN_LEN", FIXED_GEN_LEN);	
+		defineGlobal("GEN_LEN", FIXED_GEN_LEN);
 	}
-
-	sim.addSubpop("p1", N_POP); 
+	
+	sim.addSubpop("p1", N_POP);
 }
 1:BURNIN early() {
 	catn("burnin period: " + sim.cycle);
@@ -169,7 +169,7 @@ mutationEffect(m3) { return 1.0; }
 	log = community.createLogFile(OUTDIR+"/"+OUTNAME+".txt", logInterval=LOGINTERVAL);
 	// define columns for the log file
 	// cycle = generation in WF simulation
-	log.addCycle(); 
+	log.addCycle();
 	// first day of the given generation
 	log.addCustomColumn("day", "DAY_COUNTER;");
 	// daily temperature on the first day of the generation (population level)
@@ -182,9 +182,9 @@ mutationEffect(m3) { return 1.0; }
 	log.addCustomColumn("B_CTmin_cov", "cov(p1.individuals.getValue(\"B\"), p1.individuals.getValue(\"CTmin\"));");
 	// recording mean and standard deviation of fitness
 	log.addMeanSDColumns("fitness", "p1.individuals.getValue(\"fitness\");");
-
-	// start a running vector of B and CTmin_critical (will be saved as csv)
-	defineGlobal("LINES", "cycle,B,CTmin");
+	
+	// create a csv file with a header for B and CTmin that will be updated in the final 100 generations
+	writeFile(OUTDIR+"/"+OUTNAME+".csv", "cycle,B,CTmin");
 }
 
 (BURNIN+1):RUNTIME early() {
@@ -197,7 +197,7 @@ mutationEffect(m3) { return 1.0; }
 	}
 	// if there is no external temperature data, daily temps are equal to MEAN_TEMP
 	else {
-		defineGlobal("DAILY_TEMPS_AT_CURRENT_GEN", rep(MEAN_TEMP, GEN_LEN));	
+		defineGlobal("DAILY_TEMPS_AT_CURRENT_GEN", rep(MEAN_TEMP, GEN_LEN));
 	}
 	catn("daily temperatures (population level)");
 	catn(DAILY_TEMPS_AT_CURRENT_GEN);
@@ -208,7 +208,7 @@ mutationEffect(m3) { return 1.0; }
 		catn("update generation length");
 		next_first_temp = DAILY_TEMP_DATA[DAY_COUNTER];
 		defineGlobal("GEN_LEN", gen_len(next_first_temp));
-		
+	
 	}
 }
 
@@ -218,7 +218,7 @@ fitnessEffect() {
 	// Determine B and CTmin combining genetic and environmental factors
 	B = B_default + individual.sumOfMutationsOfType(m2) + epsilon[0];
 	CTmin = CTmin_default + individual.sumOfMutationsOfType(m3) + epsilon[1];
-
+	
 	// Tag individuals with B and CTmin
 	individual.setValue("B", B);
 	individual.setValue("CTmin", CTmin);
@@ -227,7 +227,7 @@ fitnessEffect() {
 	if (sim.cycle <= BURNIN){
 		individual.setValue("fitness", 1.);
 		return 1.;
-		}
+	}
 	// after burn-in, fitness is affected by TPC and DAILY_TEMPS_AT_CURRENT_GEN.  
 	else {
 		// Individual deviates from global daily temperature slightly due to random noise set by STDEV_TEMP
@@ -236,28 +236,24 @@ fitnessEffect() {
 		fitness = fitness_function(individual_daily_temps_at_current_gen, individual, RECOVERY);
 		individual.setValue("fitness", fitness);
 		return fitness;
-		}
+	}
 }
 
 
-// sample 100 individuals randomly and add their B and CTmin to csv file
+// sample 100 individuals randomly and append their B and CTmin to the csv file
 (RUNTIME-100):RUNTIME late() {
 	inds = p1.sampleIndividuals(size=100);
-	defineGlobal("LINES", c(LINES, rep(community.tick + ",", 100) + inds.getValue('B')
-			+ rep(",", 100) + inds.getValue('CTmin')));
+	csvfilename = OUTDIR + "/" + OUTNAME + ".csv";
+	newlines = rep(community.tick + ",", 100) + inds.getValue('B') + rep(",", 100) + inds.getValue('CTmin');
+	if (!writeFile(csvfilename, newlines, append = T))
+		stop("Error writing csv file.");
 }
 
 
 RUNTIME late() {
-	// save B and CTmin sample data as csv
-	csvfilename = OUTDIR+"/"+OUTNAME+".csv";
-	if (!writeFile(csvfilename, LINES))
-		stop("Error writing csv file.");
-	
 	// save tree sequence
 	sim.treeSeqOutput(OUTDIR+"/"+OUTNAME+".trees", metadata = PARAMS);
 	sim.simulationFinished();
-
 }
 
 
@@ -283,9 +279,9 @@ function (float)fitness_function(float daily_temps, object<Individual>$ ind, log
 	w_CTmax = 1 / (1 + exp((CTmax - CTmax_critical) / DeltaCTmax));
 	
 	// now make a list called w_enzymatic_conditional which is a list of w_enzymatic for given temperatures (daily_temps) if using recovery model.
-	if (recovery){	
+	if (recovery){
 		w_enzymatic_conditional = w_enzymatic(daily_temps, CTmin, B);
-		}
+	}
 	// for no-recovery model, w_enzymatic_conditional is zero if there was overheating in a previous day of the same generation, if not it is w_enzymatic.
 	else {
 		alive = T;
