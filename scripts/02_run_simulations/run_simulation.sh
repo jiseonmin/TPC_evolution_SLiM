@@ -2,7 +2,7 @@
 #SBATCH --job-name=TPC_evol_sim
 #SBATCH --output=/scratch/j.min/slurm_out/job_%A_%a.out
 #SBATCH --error=/scratch/j.min/slurm_err/job_%A_%a.err
-#SBATCH --time=0-12:00:00
+#SBATCH --time=2-00:00:00
 #SBATCH --mem=4G
 #SBATCH --partition=lotterhos
 #SBATCH --cpus-per-task=1
