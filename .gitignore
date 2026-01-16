@@ -40,6 +40,7 @@ data/*
 notebooks/gaussian_experiment.ipynb
 notebooks/sine_experiment.ipynb
 notebooks/vermont_experiment.ipynb
+notebooks/KY_experiment.ipynb
 
 # don't track figures folder (yet)
 figures/
