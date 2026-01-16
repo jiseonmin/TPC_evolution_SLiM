@@ -129,7 +129,6 @@ def sine():
     # number of generation will be around NUM_DAYS_TO_REPEAT * NUM_REP_TEMP_DATA / 30 to / 10
     BURNIN = 5000
     STDEV_TEMP = 1
-    N_POP = 50_000 # using bigger population to see tracking more clearly
     TEMPDATA_PATH = "./sine.csv"
     OUTDIR = "/projects/lotterhos/TPC_evol_SLiM"
  
@@ -144,7 +143,6 @@ def sine():
                 'NUM_REP_TEMP_DATA': NUM_REP_TEMP_DATA,
                 'BURNIN': BURNIN,
                 'STDEV_TEMP': STDEV_TEMP,
-                'N_POP': N_POP,
                 'TEMPDATA_PATH': TEMPDATA_PATH,
                 'OUTDIR': OUTDIR,
                 'RECOVERY': recovery,
