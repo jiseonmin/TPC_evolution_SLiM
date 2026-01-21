@@ -171,6 +171,65 @@ def sine():
     # Save as csv file
     params_unique.to_csv(param_unique_filename, index=False)    
 
+def sine2():
+    '''
+    Repeat the sine example with different population sizes (N=500, 5k, or 50k) and different random seeds
+    Testing how N influence adaptive tracking pattern and variability across replicate simulations
+    '''
+    param_filename = 'sine2_params.csv'
+    param_unique_filename = 'sine2_params_unique.csv'
+
+    # List of params to scan
+    N_list = [500, 5000, 50_000]
+    seed_list = range(30)
+    # OUTNAME will reflect the change of these parameters
+
+    # List of parameters to change from default values, but keep constant across all simulations
+    NUM_DAYS_TO_REPEAT = 3600
+    NUM_REP_TEMP_DATA = 100
+    # number of generation will be NUM_DAYS_TO_REPEAT * NUM_REP_TEMP_DATA / 10
+    BURNIN = 5000
+    STDEV_TEMP = 1
+    TEMPDATA_PATH = "./sine.csv"
+    OUTDIR = "/projects/lotterhos/TPC_evol_SLiM"
+ 
+    # Other params will use values from params_default
+
+    # Loop through all combinations of parameters to scan
+    # For each combination, create a new parameter dictionary, add it to the parameter list
+    params_list = []
+    for i, (N, seed) in enumerate(itertools.product(N_list, seed_list)):
+        new_row = {
+                'NUM_DAYS_TO_REPEAT': NUM_DAYS_TO_REPEAT,
+                'NUM_REP_TEMP_DATA': NUM_REP_TEMP_DATA,
+                'BURNIN': BURNIN,
+                'STDEV_TEMP': STDEV_TEMP,
+                'TEMPDATA_PATH': TEMPDATA_PATH,
+                'OUTDIR': OUTDIR,
+                'N_POP': N,
+                'seed': seed,
+                'OUTNAME': f"sine2_N_{N}_seed_{seed}"
+                }
+        for key in params_default.keys():
+            if key not in new_row.keys():
+                new_row[key] = params_default[key]
+        params_list.append(new_row)
+
+    # Save the parameter list
+    params = pd.DataFrame(params_list)
+    # Re-order columns (matches the order in slurm script in next step)
+    params = params[column_order]
+    # Save as csv file
+    params.to_csv(param_filename, index=False)
+
+    # Drop seed and outname columns
+    params_unique = params.drop(columns=['seed', 'OUTNAME']).drop_duplicates().reset_index(drop=True)
+    # Add OUTNAME again without seed
+    params_unique['OUTNAME'] = "sine2_N_" + \
+        params_unique['N_POP'].astype(str)
+    # Save as csv file
+    params_unique.to_csv(param_unique_filename, index=False)    
+
 def vermont():
     '''
     Use vermont NASA POWER data for mean temperature,
@@ -300,7 +359,7 @@ def kentucky():
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Prepare simulation parameters')
     parser.add_argument('--task', type=str, required=True,
-                       choices=['gaussian', 'sine', 'vermont', 'kentucky'],
+                       choices=['gaussian', 'sine', 'sine2', 'vermont', 'kentucky'],
                        help='Type of simulation task')
     
     args = parser.parse_args()
@@ -310,6 +369,9 @@ if __name__ == "__main__":
     elif args.task == 'sine':
         print("making parameter files for sine task.")
         sine()
+    elif args.task == 'sine2':
+        print("making parameter files for sine2 task.")
+        sine2()
     elif args.task == 'vermont':
         print("making parameter files for vermont task.")
         vermont()
