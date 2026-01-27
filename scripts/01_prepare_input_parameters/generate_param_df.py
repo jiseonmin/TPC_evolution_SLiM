@@ -187,6 +187,8 @@ def sine2():
     # List of parameters to change from default values, but keep constant across all simulations
     NUM_DAYS_TO_REPEAT = 3600
     NUM_REP_TEMP_DATA = 100
+    GEN_LEN_DEPENDS_ON_TEMP = 'F'
+
     # number of generation will be NUM_DAYS_TO_REPEAT * NUM_REP_TEMP_DATA / 10
     BURNIN = 5000
     STDEV_TEMP = 1
@@ -202,6 +204,7 @@ def sine2():
         new_row = {
                 'NUM_DAYS_TO_REPEAT': NUM_DAYS_TO_REPEAT,
                 'NUM_REP_TEMP_DATA': NUM_REP_TEMP_DATA,
+                'GEN_LEN_DEPENDS_ON_TEMP': GEN_LEN_DEPENDS_ON_TEMP,
                 'BURNIN': BURNIN,
                 'STDEV_TEMP': STDEV_TEMP,
                 'TEMPDATA_PATH': TEMPDATA_PATH,
@@ -229,6 +232,70 @@ def sine2():
         params_unique['N_POP'].astype(str)
     # Save as csv file
     params_unique.to_csv(param_unique_filename, index=False)    
+
+def sine_test():
+    '''
+    Repeat the sine example with different hyperparameters to see if amplitude of CTmin oscillation
+    can be increased.
+    '''
+    param_filename = 'sine_test_params.csv'
+    param_unique_filename = 'sine_test_params_unique.csv'
+
+    # Change either CTmin_critical or B_critical in each simulation 
+    # while keeping the other to its default value.
+    new_params = [(20, params_default["CTmin_critical"]), 
+                    (params_default["B_critical"], 4)]
+    # OUTNAME will reflect the change of these parameters
+
+    # List of parameters to change from default values, but keep constant across all simulations
+    NUM_DAYS_TO_REPEAT = 3600
+    NUM_REP_TEMP_DATA = 100
+    GEN_LEN_DEPENDS_ON_TEMP = 'F'
+    # number of generation will be NUM_DAYS_TO_REPEAT * NUM_REP_TEMP_DATA / 10
+    BURNIN = 5000
+    STDEV_TEMP = 1
+    TEMPDATA_PATH = "./sine.csv"
+    OUTDIR = "/projects/lotterhos/TPC_evol_SLiM"
+ 
+    # Other params will use values from params_default
+
+    # Loop through all combinations of parameters to scan
+    # For each combination, create a new parameter dictionary, add it to the parameter list
+    params_list = []
+    for i, (B_critical, CTmin_critical) in enumerate(new_params):
+        new_row = {
+                'NUM_DAYS_TO_REPEAT': NUM_DAYS_TO_REPEAT,
+                'NUM_REP_TEMP_DATA': NUM_REP_TEMP_DATA,
+                'GEN_LEN_DEPENDS_ON_TEMP': GEN_LEN_DEPENDS_ON_TEMP,
+                'BURNIN': BURNIN,
+                'STDEV_TEMP': STDEV_TEMP,
+                'TEMPDATA_PATH': TEMPDATA_PATH,
+                'OUTDIR': OUTDIR,
+                'CTmin_critical': CTmin_critical,
+                'B_critical': B_critical,
+                'OUTNAME': f"sine_test_CTmin_critical_{CTmin_critical}_B_critical_{B_critical}"
+                }
+        for key in params_default.keys():
+            if key not in new_row.keys():
+                new_row[key] = params_default[key]
+        params_list.append(new_row)
+
+    # Save the parameter list
+    params = pd.DataFrame(params_list)
+    # Re-order columns (matches the order in slurm script in next step)
+    params = params[column_order]
+    # Save as csv file
+    params.to_csv(param_filename, index=False)
+
+    # Drop seed and outname columns
+    params_unique = params.drop(columns=['seed', 'OUTNAME']).drop_duplicates().reset_index(drop=True)
+    # Add OUTNAME again without seed
+    params_unique['OUTNAME'] = "sine_test_CTmin_critical_" + \
+        params_unique['CTmin_critical'].astype(str) + "_B_critical_" + \
+        params_unique['B_critical'].astype(str)
+    # Save as csv file
+    params_unique.to_csv(param_unique_filename, index=False)    
+
 
 def vermont():
     '''
@@ -359,7 +426,7 @@ def kentucky():
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Prepare simulation parameters')
     parser.add_argument('--task', type=str, required=True,
-                       choices=['gaussian', 'sine', 'sine2', 'vermont', 'kentucky'],
+                       choices=['gaussian', 'sine', 'sine2', 'sine_test', 'vermont', 'kentucky'],
                        help='Type of simulation task')
     
     args = parser.parse_args()
@@ -372,6 +439,9 @@ if __name__ == "__main__":
     elif args.task == 'sine2':
         print("making parameter files for sine2 task.")
         sine2()
+    elif args.task == 'sine_test':
+        print("making parameter files for sine (test) task.")
+        sine_test()
     elif args.task == 'vermont':
         print("making parameter files for vermont task.")
         vermont()
