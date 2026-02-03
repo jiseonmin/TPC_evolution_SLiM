@@ -172,16 +172,72 @@ def gaussian2():
     # Save as csv file
     params_unique.to_csv(param_unique_filename, index=False)    
 
-def two-normal():
+def two_normal():
     '''
     Sample temperature from a mixture of two equally weighted normal distribution
     Control the seperation of the mean while keeping the total mean and variance constant
     We can do this by setting mean = MEAN_TEMP + or - SEP_MEAN / 2, 
-    std = STDEV_TEMP - SEP_MEAN ** 2 / 4 for each normal distribution.
+    variance = STDEV_TEMP^2 - SEP_MEAN ^ 2 / 4 for each normal distribution.
 
     Todo : make a new .slim that samples individual daily temperature from two normal distributions
     (pick either of them by 50-50 chance and add random variable from only that distribution.)
     '''
+    param_filename = 'two_normal_params.csv'
+    param_unique_filename = 'two_normal_params_unique.csv'
+    # this task needs one extra parameter (SEP_MEAN_TEMP) before STDEV_TEMP
+    idx = column_order.index('STDEV_TEMP')
+    column_order.insert(idx, 'SEP_MEAN_TEMP')
+
+    # scan separation between peaks (0 to 2 * STDEV_TEMP, which is the maximum separation)
+    SEP_MEAN_TEMP_list = [1, 5, 10, 20]
+    # OUTNAME will reflect the change of these parameters
+
+    # List of parameters to change from default values, but keep constant across all simulations
+    RUNTIME_IF_NO_EXTERNAL_TEMP_DATA = 20_000 # except runtime is edited for one of the mean & stdev combination (see if statement later)
+    BURNIN = 5000
+    GEN_LEN_DEPENDS_ON_TEMP = 'F'
+    USE_EXTERNAL_TEMP_DATA = 'F'
+    OUTDIR = "/projects/lotterhos/TPC_evol_SLiM"
+    MEAN_TEMP = 20
+    STDEV_TEMP = 10
+
+    # Other params will use values from params_default
+
+    
+    # Loop through all combinations of parameters to scan (in this case, MEAN_TEMP, STDEV_TEMP, seed)
+    # For each combination, create a new parameter dictionary, add it to the parameter list
+    params_list = []
+    for i, SEP_MEAN_TEMP in enumerate(SEP_MEAN_TEMP_list):
+
+        new_row = {
+                'RUNTIME_IF_NO_EXTERNAL_TEMP_DATA': RUNTIME_IF_NO_EXTERNAL_TEMP_DATA,
+                'BURNIN': BURNIN,
+                'GEN_LEN_DEPENDS_ON_TEMP': GEN_LEN_DEPENDS_ON_TEMP,
+                'USE_EXTERNAL_TEMP_DATA': USE_EXTERNAL_TEMP_DATA,
+                'MEAN_TEMP': MEAN_TEMP,
+                'SEP_MEAN_TEMP': SEP_MEAN_TEMP,
+                'STDEV_TEMP': STDEV_TEMP,
+                'OUTDIR': OUTDIR,
+                'OUTNAME': f"two_normal_SEP_MEAN_TEMP_{SEP_MEAN_TEMP}"
+                }
+        for key in params_default.keys():
+            if key not in new_row.keys():
+                new_row[key] = params_default[key]
+        params_list.append(new_row)
+
+    # Save the parameter list
+    params = pd.DataFrame(params_list)
+    # Re-order columns (matches the order in slurm script in next step)
+    params = params[column_order]
+    # Save as csv file
+    params.to_csv(param_filename, index=False)
+
+    # Drop seed and outname columns
+    params_unique = params.drop(columns=['seed', 'OUTNAME']).drop_duplicates().reset_index(drop=True)
+    # Add OUTNAME again without seed
+    params_unique['OUTNAME'] = "two_normal_SEP_MEAN_TEMP_" + params_unique['SEP_MEAN_TEMP'].astype(str) 
+    # Save as csv file
+    params_unique.to_csv(param_unique_filename, index=False)
 
 def sine():
     '''
@@ -315,11 +371,14 @@ def sine_test():
     '''
     param_filename = 'sine_test_params.csv'
     param_unique_filename = 'sine_test_params_unique.csv'
-
+    # First, try default values (same as gaussian example)
     # Change either CTmin_critical or B_critical in each simulation 
     # while keeping the other to its default value.
-    new_params = [(20, params_default["CTmin_critical"]), 
-                    (params_default["B_critical"], 4)]
+    # lastly, try modifying both.
+    new_params = [(params_default["B_critical"], params_default["CTmin_critical"]), 
+                    (20, params_default["CTmin_critical"]), 
+                    (params_default["B_critical"], 4), 
+                    (20, 4)]
     # OUTNAME will reflect the change of these parameters
 
     # List of parameters to change from default values, but keep constant across all simulations
@@ -501,7 +560,7 @@ def kentucky():
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Prepare simulation parameters')
     parser.add_argument('--task', type=str, required=True,
-                       choices=['gaussian', 'gaussian2', 'sine', 'sine2', 'sine_test', 'vermont', 'kentucky'],
+                       choices=['gaussian', 'gaussian2', 'two_normal', 'sine', 'sine2', 'sine_test', 'vermont', 'kentucky'],
                        help='Type of simulation task')
     
     args = parser.parse_args()
@@ -511,6 +570,9 @@ if __name__ == "__main__":
     elif args.task == 'gaussian2':
         print("making parameter files for gaussian2 task.")
         gaussian2()
+    if args.task == 'two_normal':
+        print("making parameter files for two normal distributions task.")
+        two_normal()
     elif args.task == 'sine':
         print("making parameter files for sine task.")
         sine()
