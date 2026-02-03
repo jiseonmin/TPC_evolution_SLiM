@@ -172,6 +172,17 @@ def gaussian2():
     # Save as csv file
     params_unique.to_csv(param_unique_filename, index=False)    
 
+def two-normal():
+    '''
+    Sample temperature from a mixture of two equally weighted normal distribution
+    Control the seperation of the mean while keeping the total mean and variance constant
+    We can do this by setting mean = MEAN_TEMP + or - SEP_MEAN / 2, 
+    std = STDEV_TEMP - SEP_MEAN ** 2 / 4 for each normal distribution.
+
+    Todo : make a new .slim that samples individual daily temperature from two normal distributions
+    (pick either of them by 50-50 chance and add random variable from only that distribution.)
+    '''
+
 def sine():
     '''
     Assume mean temperature fluctuates sinusoidally between 0 and 35.
