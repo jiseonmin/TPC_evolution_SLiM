@@ -1,0 +1,5 @@
+RUNTIME_IF_NO_EXTERNAL_TEMP_DATA,BURNIN,LOGINTERVAL,N_POP,RECOVERY,GEN_LEN_DEPENDS_ON_TEMP,FIXED_GEN_LEN,USE_EXTERNAL_TEMP_DATA,TEMPDATA_PATH,MEAN_TEMP,SEP_MEAN_TEMP,STDEV_TEMP,NUM_DAYS_TO_REPEAT,NUM_REP_TEMP_DATA,B_default,CTmin_default,B_critical,DeltaB,CTmin_critical,DeltaCTmin,CTmax_critical,DeltaCTmax,OUTDIR,OUTNAME
+20000,5000,1,5000,F,F,10,F,./VT_weather.txt,20,1,10,365,2,31,5,40,2,0,2,40,0.2,/projects/lotterhos/TPC_evol_SLiM,two_normal_SEP_MEAN_TEMP_1
+20000,5000,1,5000,F,F,10,F,./VT_weather.txt,20,5,10,365,2,31,5,40,2,0,2,40,0.2,/projects/lotterhos/TPC_evol_SLiM,two_normal_SEP_MEAN_TEMP_5
+20000,5000,1,5000,F,F,10,F,./VT_weather.txt,20,10,10,365,2,31,5,40,2,0,2,40,0.2,/projects/lotterhos/TPC_evol_SLiM,two_normal_SEP_MEAN_TEMP_10
+20000,5000,1,5000,F,F,10,F,./VT_weather.txt,20,20,10,365,2,31,5,40,2,0,2,40,0.2,/projects/lotterhos/TPC_evol_SLiM,two_normal_SEP_MEAN_TEMP_20
