@@ -21,8 +21,6 @@ conda activate tpc_evo_slim
 LINE_NUM=$((SLURM_ARRAY_TASK_ID + 1))
 PARAMS=$(sed -n "${LINE_NUM}p" "$CSV_FILE")
 
-echo -e "DEBUG: PARAMS = $PARAMS"
-
 # Parse CSV - add more variables as needed
 IFS=',' read -r seed RUNTIME_IF_NO_EXTERNAL_TEMP_DATA BURNIN\
  LOGINTERVAL N_POP RECOVERY GEN_LEN_DEPENDS_ON_TEMP\
@@ -33,7 +31,6 @@ IFS=',' read -r seed RUNTIME_IF_NO_EXTERNAL_TEMP_DATA BURNIN\
     DeltaCTmin CTmax_critical DeltaCTmax\
      OUTDIR OUTNAME  <<< "$PARAMS"
 
-echo -e "DEBUG: seed = $seed"
 echo -e "Running job ${SLURM_ARRAY_TASK_ID} \n \
 with seed=${seed} RUNTIME_IF_NO_EXTERNAL_TEMP_DATA=${RUNTIME} BURNIN=${BURNIN} \n \
 LOGINTERVAL=${LOGINTERVAL} N_POP=${N_POP} RECOVERY=${RECOVERY} \n \
