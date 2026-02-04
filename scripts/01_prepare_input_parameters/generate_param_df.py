@@ -629,7 +629,7 @@ def kentucky():
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Prepare simulation parameters')
     parser.add_argument('--task', type=str, required=True,
-                       choices=['gaussian', 'gaussian2', 'two_normal', 'sine', 'sine2', 'sine_test', 'vermont', 'kentucky'],
+                       choices=['gaussian', 'gaussian2', 'two_normal', 'sine', 'sine2', 'sine3', 'sine_test', 'vermont', 'kentucky'],
                        help='Type of simulation task')
     
     args = parser.parse_args()
@@ -648,6 +648,9 @@ if __name__ == "__main__":
     elif args.task == 'sine2':
         print("making parameter files for sine2 task.")
         sine2()
+    elif args.task == 'sine3':
+        print("making parameter files for sine3 task.")
+        sine3()
     elif args.task == 'sine_test':
         print("making parameter files for sine (test) task.")
         sine_test()
