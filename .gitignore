@@ -19,6 +19,8 @@ __pycache__/
 !scripts/01_prepare_input_parameters/sine_params_unique.csv
 !scripts/01_prepare_input_parameters/sine2_params.csv
 !scripts/01_prepare_input_parameters/sine2_params_unique.csv
+!scripts/01_prepare_input_parameters/sine3_params.csv
+!scripts/01_prepare_input_parameters/sine3_params_unique.csv
 !scripts/01_prepare_input_parameters/sine_test_params.csv
 !scripts/01_prepare_input_parameters/sine_test_params_unique.csv
 !scripts/01_prepare_input_parameters/VT_params.csv
