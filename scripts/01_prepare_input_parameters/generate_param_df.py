@@ -302,70 +302,11 @@ def sine():
     # Save as csv file
     params_unique.to_csv(param_unique_filename, index=False)    
 
-def sine2():
-    '''
-    Repeat the sine example with different population sizes (N=500, 5k, or 50k) and different random seeds
-    Testing how N influence adaptive tracking pattern and variability across replicate simulations
-    '''
-    param_filename = 'sine2_params.csv'
-    param_unique_filename = 'sine2_params_unique.csv'
-
-    # List of params to scan
-    N_list = [500, 5000, 50_000]
-    seed_list = range(30)
-    # OUTNAME will reflect the change of these parameters
-
-    # List of parameters to change from default values, but keep constant across all simulations
-    NUM_DAYS_TO_REPEAT = 3600
-    NUM_REP_TEMP_DATA = 100
-    GEN_LEN_DEPENDS_ON_TEMP = 'F'
-
-    # number of generation will be NUM_DAYS_TO_REPEAT * NUM_REP_TEMP_DATA / 10
-    BURNIN = 5000
-    STDEV_TEMP = 1
-    TEMPDATA_PATH = "./sine.csv"
-    OUTDIR = "/projects/lotterhos/TPC_evol_SLiM"
- 
-    # Other params will use values from params_default
-
-    # Loop through all combinations of parameters to scan
-    # For each combination, create a new parameter dictionary, add it to the parameter list
-    params_list = []
-    for i, (N, seed) in enumerate(itertools.product(N_list, seed_list)):
-        new_row = {
-                'NUM_DAYS_TO_REPEAT': NUM_DAYS_TO_REPEAT,
-                'NUM_REP_TEMP_DATA': NUM_REP_TEMP_DATA,
-                'GEN_LEN_DEPENDS_ON_TEMP': GEN_LEN_DEPENDS_ON_TEMP,
-                'BURNIN': BURNIN,
-                'STDEV_TEMP': STDEV_TEMP,
-                'TEMPDATA_PATH': TEMPDATA_PATH,
-                'OUTDIR': OUTDIR,
-                'N_POP': N,
-                'seed': seed,
-                'OUTNAME': f"sine2_N_{N}_seed_{seed}"
-                }
-        for key in params_default.keys():
-            if key not in new_row.keys():
-                new_row[key] = params_default[key]
-        params_list.append(new_row)
-
-    # Save the parameter list
-    params = pd.DataFrame(params_list)
-    # Re-order columns (matches the order in slurm script in next step)
-    params = params[column_order]
-    # Save as csv file
-    params.to_csv(param_filename, index=False)
-
-    # Drop seed and outname columns
-    params_unique = params.drop(columns=['seed', 'OUTNAME']).drop_duplicates().reset_index(drop=True)
-    # Add OUTNAME again without seed
-    params_unique['OUTNAME'] = "sine2_N_" + \
-        params_unique['N_POP'].astype(str)
-    # Save as csv file
-    params_unique.to_csv(param_unique_filename, index=False)    
 
 def sine_test():
     '''
+    Assume mean temperature fluctuates sinusoidally between 0 and 35 using sine.csv.
+    Additionally individuals experience random fluctuation with stdev = 1
     Repeat the sine example with different hyperparameters to see if amplitude of CTmin oscillation
     can be increased.
     '''
@@ -430,6 +371,134 @@ def sine_test():
     # Save as csv file
     params_unique.to_csv(param_unique_filename, index=False)    
 
+def sine2():
+    '''
+    Repeat the sine example with different population sizes (N=500, 5k, or 50k) and different random seeds
+    Testing how N influence adaptive tracking pattern and variability across replicate simulations
+    Based on sine_test, use B_critical = 20 to make adaptive tracking more visible
+    '''
+    param_filename = 'sine2_params.csv'
+    param_unique_filename = 'sine2_params_unique.csv'
+
+    # List of params to scan
+    N_list = [500, 5000, 50_000]
+    seed_list = range(30)
+    # OUTNAME will reflect the change of these parameters
+
+    # List of parameters to change from default values, but keep constant across all simulations
+    NUM_DAYS_TO_REPEAT = 3600
+    NUM_REP_TEMP_DATA = 100
+    GEN_LEN_DEPENDS_ON_TEMP = 'F'
+    B_critical = 20
+    # number of generation will be NUM_DAYS_TO_REPEAT * NUM_REP_TEMP_DATA / 10
+    BURNIN = 5000
+    STDEV_TEMP = 1
+    TEMPDATA_PATH = "./sine.csv"
+    OUTDIR = "/projects/lotterhos/TPC_evol_SLiM"
+ 
+    # Other params will use values from params_default
+
+    # Loop through all combinations of parameters to scan
+    # For each combination, create a new parameter dictionary, add it to the parameter list
+    params_list = []
+    for i, (N, seed) in enumerate(itertools.product(N_list, seed_list)):
+        new_row = {
+                'NUM_DAYS_TO_REPEAT': NUM_DAYS_TO_REPEAT,
+                'NUM_REP_TEMP_DATA': NUM_REP_TEMP_DATA,
+                'GEN_LEN_DEPENDS_ON_TEMP': GEN_LEN_DEPENDS_ON_TEMP,
+                'B_critical': B_critical,
+                'BURNIN': BURNIN,
+                'STDEV_TEMP': STDEV_TEMP,
+                'TEMPDATA_PATH': TEMPDATA_PATH,
+                'OUTDIR': OUTDIR,
+                'N_POP': N,
+                'seed': seed,
+                'OUTNAME': f"sine2_N_{N}_seed_{seed}"
+                }
+        for key in params_default.keys():
+            if key not in new_row.keys():
+                new_row[key] = params_default[key]
+        params_list.append(new_row)
+
+    # Save the parameter list
+    params = pd.DataFrame(params_list)
+    # Re-order columns (matches the order in slurm script in next step)
+    params = params[column_order]
+    # Save as csv file
+    params.to_csv(param_filename, index=False)
+
+    # Drop seed and outname columns
+    params_unique = params.drop(columns=['seed', 'OUTNAME']).drop_duplicates().reset_index(drop=True)
+    # Add OUTNAME again without seed
+    params_unique['OUTNAME'] = "sine2_N_" + \
+        params_unique['N_POP'].astype(str)
+    # Save as csv file
+    params_unique.to_csv(param_unique_filename, index=False)    
+
+
+def sine3():
+    '''
+    Repeat the sine example with fixed generation length or variable generation length and different random seeds
+    When gen length is fixed, it is set to 22, so that the average length is roughly the same between the two cases.
+    Based on sine_test, use B_critical = 20 to make adaptive tracking more visible
+    '''
+    param_filename = 'sine3_params.csv'
+    param_unique_filename = 'sine3_params_unique.csv'
+
+    # List of params to scan
+    GEN_LEN_DEPENDS_ON_TEMP_list = ['T', 'F']
+    seed_list = range(30)
+    # OUTNAME will reflect the change of these parameters
+
+    # List of parameters to change from default values, but keep constant across all simulations
+    NUM_DAYS_TO_REPEAT = 3600
+    NUM_REP_TEMP_DATA = 100
+    FIXED_GEN_LEN = 22
+    B_critical = 20
+    # number of generation will be NUM_DAYS_TO_REPEAT * NUM_REP_TEMP_DATA / 10
+    BURNIN = 5000
+    STDEV_TEMP = 1
+    TEMPDATA_PATH = "./sine.csv"
+    OUTDIR = "/projects/lotterhos/TPC_evol_SLiM"
+ 
+    # Other params will use values from params_default
+
+    # Loop through all combinations of parameters to scan
+    # For each combination, create a new parameter dictionary, add it to the parameter list
+    params_list = []
+    for i, (GEN_LEN_DEPENDS_ON_TEMP, seed) in enumerate(itertools.product(GEN_LEN_DEPENDS_ON_TEMP_list, seed_list)):
+        new_row = {
+                'NUM_DAYS_TO_REPEAT': NUM_DAYS_TO_REPEAT,
+                'NUM_REP_TEMP_DATA': NUM_REP_TEMP_DATA,
+                'GEN_LEN_DEPENDS_ON_TEMP': GEN_LEN_DEPENDS_ON_TEMP,
+                'FIXED_GEN_LEN': FIXED_GEN_LEN,
+                'B_critical': B_critical,
+                'BURNIN': BURNIN,
+                'STDEV_TEMP': STDEV_TEMP,
+                'TEMPDATA_PATH': TEMPDATA_PATH,
+                'OUTDIR': OUTDIR,
+                'seed': seed,
+                'OUTNAME': f"sine3_GEN_LEN_DEPENDS_ON_TEMP_{GEN_LEN_DEPENDS_ON_TEMP}_seed_{seed}"
+                }
+        for key in params_default.keys():
+            if key not in new_row.keys():
+                new_row[key] = params_default[key]
+        params_list.append(new_row)
+
+    # Save the parameter list
+    params = pd.DataFrame(params_list)
+    # Re-order columns (matches the order in slurm script in next step)
+    params = params[column_order]
+    # Save as csv file
+    params.to_csv(param_filename, index=False)
+
+    # Drop seed and outname columns
+    params_unique = params.drop(columns=['seed', 'OUTNAME']).drop_duplicates().reset_index(drop=True)
+    # Add OUTNAME again without seed
+    params_unique['OUTNAME'] = "sine3_GEN_LEN_DEPENDS_ON_TEMP_" + \
+        params_unique['GEN_LEN_DEPENDS_ON_TEMP'].astype(str)
+    # Save as csv file
+    params_unique.to_csv(param_unique_filename, index=False)    
 
 def vermont():
     '''
