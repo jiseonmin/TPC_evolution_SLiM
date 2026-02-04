@@ -198,7 +198,7 @@ def two_normal():
     GEN_LEN_DEPENDS_ON_TEMP = 'F'
     USE_EXTERNAL_TEMP_DATA = 'F'
     OUTDIR = "/projects/lotterhos/TPC_evol_SLiM"
-    MEAN_TEMP = 20
+    MEAN_TEMP = 5
     STDEV_TEMP = 10
 
     # Other params will use values from params_default
