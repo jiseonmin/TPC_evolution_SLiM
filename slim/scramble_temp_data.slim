@@ -164,14 +164,16 @@ mutationEffect(m3) { return 1.0; }
 	// find daily temperatures at population level
 	// draw GEN_LEN - 1 new temperatures from the external timeseries data. Use the pre-defined (from previous generation) temperature for the first day
 	idx = rdunif(GEN_LEN-1, min=0, max=length(DAILY_TEMP_DATA)-1);
+	
 	defineGlobal("DAILY_TEMPS_AT_CURRENT_GEN", c(FIRST_TEMP, DAILY_TEMP_DATA[idx]));
 	catn("daily temperatures (population level)");
 	catn(DAILY_TEMPS_AT_CURRENT_GEN);
-	// Update first day's temperature and generation length for the next generation if generation length is not fixed
+	// Update first day's temperature, and generation length for the next generation if generation length is not fixed
+	idx = rdunif(1, min=0, max=length(DAILY_TEMP_DATA)-1);
+	defineGlobal("FIRST_TEMP", DAILY_TEMP_DATA[idx]);
+
 	if ( GEN_LEN_DEPENDS_ON_TEMP ) {
 		catn("update generation length");
-		idx = rdunif(1, min=0, max=length(DAILY_TEMP_DATA)-1);
-		defineGlobal("FIRST_TEMP", DAILY_TEMP_DATA[idx]);
 		defineGlobal("GEN_LEN", gen_len(FIRST_TEMP));
 	}
 }
