@@ -118,14 +118,13 @@ mutationEffect(m3) { return 1.0; }
 	temp_data = DataFrame(readCSV(TEMPDATA_PATH)).subsetColumns("T2M").asMatrix();
 
 	defineConstant("DAILY_TEMP_DATA", temp_data);
-		// find actual runtime based on the repeated time-series data
 	
-	
+	// randomly sample a temperature, use it as the very first daily temperature
+	idx = rdunif(1, min=0, max=length(DAILY_TEMP_DATA)-1);
+	defineGlobal("FIRST_TEMP", DAILY_TEMP_DATA[idx]);	
 	// Set up a global parameter for generation length.
 	if (GEN_LEN_DEPENDS_ON_TEMP) {
-		// if generation length is temperature dependent and there is external temperature data, sample the first day's temperature, and define the first generation length based on it.
-		idx = rdunif(1, min=0, max=length(DAILY_TEMP_DATA)-1);
-		defineGlobal("FIRST_TEMP", DAILY_TEMP_DATA[idx]);
+		// if generation length is temperature dependent and there is external temperature data, define the first generation length based on the sampled first temperature.
 		defineGlobal("GEN_LEN", gen_len(FIRST_TEMP));
 	}
 	// if generation length is not temperature dependent, set it to FIXED_GEN_LEN (remains constant throughout the simulation).
