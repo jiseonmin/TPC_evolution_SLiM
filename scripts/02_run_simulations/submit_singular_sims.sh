@@ -16,7 +16,5 @@ conda activate tpc_evo_slim
 # Move to slim path
 SLIM_PATH="/home/j.min/TPC_evolution_SLiM/slim"
 cd "$SLIM_PATH"
-slim variable_N.slim
-echo -e "seasonally variable N simulation done. Next sim,"
 slim scramble_temp_data.slim
 echo -e "scrambled VT sim done."
