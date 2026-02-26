@@ -1,5 +1,4 @@
 import argparse
-import csv
 import itertools
 import pandas as pd
 # For each workflow, generate two dataframe with parameters (params, params_unique)
@@ -171,6 +170,73 @@ def gaussian2():
     params_unique['OUTNAME'] = "gaussian2_MEAN_TEMP_" + params_unique['MEAN_TEMP'].astype(str) + "_STDEV_TEMP_" + params_unique['STDEV_TEMP'].astype(str)
     # Save as csv file
     params_unique.to_csv(param_unique_filename, index=False)    
+def gaussian_alt_initial():
+    '''
+    Alternative default values (and initial values) of B and CTmin (B=5, CTmin=33)
+    '''
+    param_filename = 'gaussian_alt_initial_params.csv'
+    param_unique_filename = 'gaussian_alt_initial_params_unique.csv'
+
+    # List of params to scan
+    MEAN_TEMP_list = [5, 20, 35]
+    STDEV_TEMP_list = [1, 3, 10]
+    seed_list = range(30)
+    # OUTNAME will reflect the change of these parameters
+
+    # List of parameters to change from default values, but keep constant across all simulations
+    RUNTIME_IF_NO_EXTERNAL_TEMP_DATA = 20_000 # except runtime is edited for one of the mean & stdev combination (see if statement later)
+    BURNIN = 5000
+    GEN_LEN_DEPENDS_ON_TEMP = 'F'
+    USE_EXTERNAL_TEMP_DATA = 'F'
+    OUTDIR = "/projects/lotterhos/TPC_evol_SLiM"
+    B_default=5
+    CTmin_default=33
+ 
+    # Other params will use values from params_default
+
+    
+    # Loop through all combinations of parameters to scan (in this case, MEAN_TEMP, STDEV_TEMP, seed)
+    # For each combination, create a new parameter dictionary, add it to the parameter list
+    params_list = []
+    for i, (mean_temp, stdev_temp, seed) in enumerate(itertools.product(MEAN_TEMP_list, STDEV_TEMP_list, seed_list)):
+        if (mean_temp == 35) & (stdev_temp == 3):
+            # needs extra runtime to equilibrate
+            runtime_if_no_external_temp_data = 40_000
+        else:
+            runtime_if_no_external_temp_data = RUNTIME_IF_NO_EXTERNAL_TEMP_DATA
+
+        new_row = {
+                'seed': seed,
+                'RUNTIME_IF_NO_EXTERNAL_TEMP_DATA': runtime_if_no_external_temp_data,
+                'BURNIN': BURNIN,
+                'GEN_LEN_DEPENDS_ON_TEMP': GEN_LEN_DEPENDS_ON_TEMP,
+                'USE_EXTERNAL_TEMP_DATA': USE_EXTERNAL_TEMP_DATA,
+                'MEAN_TEMP': mean_temp,
+                'STDEV_TEMP': stdev_temp,
+                'OUTDIR': OUTDIR,
+                'OUTNAME': f"gaussian_MEAN_TEMP_{mean_temp}_STDEV_TEMP_{stdev_temp}_seed_{seed}",
+                'B_default': B_default,
+                'CTmin_default': CTmin_default
+                }
+        for key in params_default.keys():
+            if key not in new_row.keys():
+                new_row[key] = params_default[key]
+        params_list.append(new_row)
+
+    # Save the parameter list
+    params = pd.DataFrame(params_list)
+    # Re-order columns (matches the order in slurm script in next step)
+    params = params[column_order]
+    # Save as csv file
+    params.to_csv(param_filename, index=False)
+
+    # Drop seed and outname columns
+    params_unique = params.drop(columns=['seed', 'OUTNAME']).drop_duplicates().reset_index(drop=True)
+    # Add OUTNAME again without seed
+    params_unique['OUTNAME'] = "gaussian_alt_initial_MEAN_TEMP_" + params_unique['MEAN_TEMP'].astype(str) + "_STDEV_TEMP_" + params_unique['STDEV_TEMP'].astype(str)
+    # Save as csv file
+    params_unique.to_csv(param_unique_filename, index=False)
+
 
 def two_normal():
     '''
@@ -629,7 +695,7 @@ def kentucky():
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Prepare simulation parameters')
     parser.add_argument('--task', type=str, required=True,
-                       choices=['gaussian', 'gaussian2', 'two_normal', 'sine', 'sine2', 'sine3', 'sine_test', 'vermont', 'kentucky'],
+                       choices=['gaussian', 'gaussian2', 'gaussian_alt_initial', 'two_normal', 'sine', 'sine2', 'sine3', 'sine_test', 'vermont', 'kentucky'],
                        help='Type of simulation task')
     
     args = parser.parse_args()
@@ -639,7 +705,10 @@ if __name__ == "__main__":
     elif args.task == 'gaussian2':
         print("making parameter files for gaussian2 task.")
         gaussian2()
-    if args.task == 'two_normal':
+    elif args.task == 'gaussian_alt_initial':
+        print("making parameter files for gaussian task with alternative default B and CTmin.")
+        gaussian_alt_initial()
+    elif args.task == 'two_normal':
         print("making parameter files for two normal distributions task.")
         two_normal()
     elif args.task == 'sine':
