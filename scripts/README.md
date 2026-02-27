@@ -49,8 +49,16 @@ Finally, you might want to modify `submit_job_array.sh` to run simulations using
 ## 03. Expected fitness landscape and expected TPC trajectory (optional)
 Here, we use helper functions from `tpc_functions_oo.py` to calculate expected fitness landscape, optimal B and CTmin that maximizes expected fitness, and path from initial B and CTmin and optimal B and CTmin predicted from solving a differential equation numerically.
 The theoretical model assumes temperature to be Gaussian distributed and generation length to be constant.
-Currently, there is one bash script that will generate an .npz file for each line in `gaussian_params_unique.csv`. 
-One can use it for a different task by changing `CSV_FILE` and `AVG_GEN_LEN` appropriately along with the first few lines starting with `#SBATCH` appropriately, as described in step 2.
+You can submit a job array to carry out the calculation for each row of parameter files in parallel by running
+```bash
+sbatch analytical_prediction.sh gaussian_params_unique.csv
+```
+replacing `gaussian_params_unique.csv` for the appropriate filename.
+
+If the simulations are set to run with fixed generation length, you can launch the jobs without completing step 2, Run SLiM. But if the generation length depends on temperature, log files will be used, running `find_avg_gen_len.py`. 
+
+Adjust lines starting with `#SBATCH` as needed. 
+
 
 ## 04. Average trajectories and visualize (optional)
 `04_average_and_visualize_logged_data.py` averages the log files created from 'gaussian' workflow across the replicate simulations. It also generates a diagnostic figure that plots some of the logged parameters against generation time. 
