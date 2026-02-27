@@ -12,7 +12,7 @@ CSV_FILE="$1"
 
 module load anaconda3
 eval "$(conda shell.bash hook)"
-conda activate tpc_evo_slim
+conda activate /projects/lotterhos/TPC_evol_SLiM/tpc_evol_slim
 
 # skip header
 LINE_NUM=$((SLURM_ARRAY_TASK_ID + 1))
