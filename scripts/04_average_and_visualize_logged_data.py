@@ -6,17 +6,24 @@ import os
 
 parser = argparse.ArgumentParser(description='Prepare simulation parameters')
 parser.add_argument('--task', type=str, required=True,
-                    choices=['gaussian', 'sine', 'vermont'],
+                    choices=['gaussian', 'gaussian_alt_initial', 'temp_trop', 'sine', 'vermont'],
                     help='Type of simulation task')
 
 args = parser.parse_args()
 
 # Define path to parameter files based on the task (same as python file in step 1 for generating params)
 if args.task == 'gaussian':
-    print("making parameter files for gaussian task.")
+    print("grab param files for gaussian task.")
     params_unique_path = "./01_prepare_input_parameters/gaussian_params_unique.csv"
     params_path = "./01_prepare_input_parameters/gaussian_params.csv"
-
+elif args.task == 'gaussian_alt_initial':
+    print("grab param files for gaussain alternative initial condition task.")
+    params_unique_path = "./01_prepare_input_parameters/gaussian_alt_initial_params_unique.csv"
+    params_path = "./01_prepare_input_parameters/gaussian_alt_initial_params.csv"
+elif args.task == 'temp_trop'
+    print("grab param files for temperate vs. tropical task")
+    params_unique_path = "./01_prepare_input_parameters/temp_trop_params_unique.csv"
+    params_path = "./01_prepare_input_parameters/temp_trop_params.csv"
 elif args.task == 'sine':
     print("making parameter files for sine task.")
     params_unique_path = "./01_prepare_input_parameters/sine_params_unique.csv"
