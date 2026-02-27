@@ -1,6 +1,10 @@
 import argparse
 import itertools
 import pandas as pd
+import numpy as np
+import sys
+sys.path.insert(1, '../03_analytical_prediction')
+from tpc_functions_oo import *
 # For each workflow, generate two dataframe with parameters (params, params_unique)
 # params list all parameter combinations used for SLiM simulation
 # params_unique iterate through all but random seeds. This is used for analytical step and to average across replicate simulations. 
@@ -214,7 +218,7 @@ def gaussian_alt_initial():
                 'MEAN_TEMP': mean_temp,
                 'STDEV_TEMP': stdev_temp,
                 'OUTDIR': OUTDIR,
-                'OUTNAME': f"gaussian_MEAN_TEMP_{mean_temp}_STDEV_TEMP_{stdev_temp}_seed_{seed}",
+                'OUTNAME': f"gaussian_alt_initial_MEAN_TEMP_{mean_temp}_STDEV_TEMP_{stdev_temp}_seed_{seed}",
                 'B_default': B_default,
                 'CTmin_default': CTmin_default
                 }
@@ -236,6 +240,124 @@ def gaussian_alt_initial():
     params_unique['OUTNAME'] = "gaussian_alt_initial_MEAN_TEMP_" + params_unique['MEAN_TEMP'].astype(str) + "_STDEV_TEMP_" + params_unique['STDEV_TEMP'].astype(str)
     # Save as csv file
     params_unique.to_csv(param_unique_filename, index=False)
+
+def temp_trop():
+    '''
+    Comparing extreme temperate and tropical populations further.
+    Set default B and CTmin to be same distance and fitness away from theoretical optimum in both environments.
+    Test for three population sizes (500, 5k, 50k)
+    Repeat for 30 random seeds
+    '''
+
+    param_filename = 'temp_trop_params.csv'
+    param_unique_filename = 'temp_trop_params_unique.csv'
+
+    # List of params to scan
+    seed_list = range(30)
+    N_list = [500, 5000, 50_000]
+    # OUTNAME will reflect the change of these parameters
+
+
+    # find B_default and CTmin_default that is half-way between tropical and temperate
+
+    tpc_object = tpc_functions()
+
+    MEAN_TEMP_AND_STDEV_TEMP = [(35, 1), (20, 10)]
+    # Among the muT and sigmaT's used in A1, select two combinations that represent tropical and temperate environments
+    muT_trop = MEAN_TEMP_AND_STDEV_TEMP[0][0]
+    sigmaT_trop = MEAN_TEMP_AND_STDEV_TEMP[0][1]
+    muT_temp = MEAN_TEMP_AND_STDEV_TEMP[1][0]
+    sigmaT_temp = MEAN_TEMP_AND_STDEV_TEMP[1][1]
+    # We want to find initial B and CTmin that are equidistant from the theoretical optima from both conditions, and have the same starting fitness
+    datadir = "../../data/"
+
+    analytical_info_trop = np.load(f"{datadir}gaussian_MEAN_TEMP_{muT_trop}_STDEV_TEMP_{sigmaT_trop}_analytical_info.npz", allow_pickle=True)
+    analytical_info_temp = np.load(f"{datadir}gaussian_MEAN_TEMP_{muT_temp}_STDEV_TEMP_{sigmaT_temp}_analytical_info.npz", allow_pickle=True)
+    x1 = analytical_info_trop['B_opt']
+    x2 = analytical_info_temp['B_opt']
+    y1 = analytical_info_trop['CTmin_opt']
+    y2 = analytical_info_temp['CTmin_opt']
+
+
+    def CTmin_equidistant(B):
+        CTmin = (x2**2 - x1**2 + y2**2 - y1**2) / (2 * (y2-y1)) - (x2-x1) / (y2-y1) * B
+        return CTmin
+
+    def diff_fitness(B):
+        CTmin = CTmin_equidistant(B)
+        # Given B, find CTmin that is equidistant from (x1,y1) and (x2,y2)
+        fit1 = tpc_object.expected_w_TPC_no_recovery(CTmin=CTmin, 
+            B=B, 
+            muT=muT_trop,
+            sigmaT=sigmaT_trop)
+        fit2 = tpc_object.expected_w_TPC_no_recovery(CTmin=CTmin,
+            B=B,
+            muT=muT_temp,
+            sigmaT=sigmaT_temp)
+        if fit1 < 1e-3:
+            return 10
+        else:
+            return np.abs(fit1-fit2)
+    B_default=0.1
+    diff = diff_fitness(B_default)
+    while diff > 5e-4:
+        B_default += 1e-2
+        CTmin_default = CTmin_equidistant(B_default)
+        if B_default + CTmin_default > 40:
+            print("CTmax too big. No root found")
+            break
+        else:
+            diff = diff_fitness(B_default)
+
+    # List of parameters to change from default values, but keep constant across all simulations
+    RUNTIME_IF_NO_EXTERNAL_TEMP_DATA = 20_000 # except runtime is edited for one of the mean & stdev combination (see if statement later)
+    BURNIN = 5000
+    GEN_LEN_DEPENDS_ON_TEMP = 'F'
+    USE_EXTERNAL_TEMP_DATA = 'F'
+    OUTDIR = "/projects/lotterhos/TPC_evol_SLiM"
+ 
+    # Other params will use values from params_default
+
+    
+    # Loop through all combinations of parameters to scan (in this case, MEAN_TEMP, STDEV_TEMP, seed)
+    # For each combination, create a new parameter dictionary, add it to the parameter list
+    params_list = []
+    for i, ((mean_temp, stdev_temp), seed, N) in enumerate(itertools.product(MEAN_TEMP_AND_STDEV_TEMP, seed_list, N_list)):
+        new_row = {
+                'seed': seed,
+                'RUNTIME_IF_NO_EXTERNAL_TEMP_DATA': RUNTIME_IF_NO_EXTERNAL_TEMP_DATA,
+                'BURNIN': BURNIN,
+                'GEN_LEN_DEPENDS_ON_TEMP': GEN_LEN_DEPENDS_ON_TEMP,
+                'USE_EXTERNAL_TEMP_DATA': USE_EXTERNAL_TEMP_DATA,
+                'MEAN_TEMP': mean_temp,
+                'STDEV_TEMP': stdev_temp,
+                'OUTDIR': OUTDIR,
+                'OUTNAME': f"MEAN_TEMP_{mean_temp}_STDEV_TEMP_{stdev_temp}_N_{N}_seed_{seed}",
+                'B_default': B_default,
+                'CTmin_default': CTmin_default,
+                'N_POP':N
+                }
+        for key in params_default.keys():
+            if key not in new_row.keys():
+                new_row[key] = params_default[key]
+        params_list.append(new_row)
+
+    # Save the parameter list
+    params = pd.DataFrame(params_list)
+    # Re-order columns (matches the order in slurm script in next step)
+    params = params[column_order]
+    # Save as csv file
+    params.to_csv(param_filename, index=False)
+
+    # Drop seed and outname columns
+    params_unique = params.drop(columns=['seed', 'OUTNAME']).drop_duplicates().reset_index(drop=True)
+    # Add OUTNAME again without seed
+    params_unique['OUTNAME'] = "MEAN_TEMP_" + params_unique['MEAN_TEMP'].astype(str) \
+        + "_STDEV_TEMP_" + params_unique['STDEV_TEMP'].astype(str)\
+            + "_N_" + params_unique['N_POP'].astype(str)
+    # Save as csv file
+    params_unique.to_csv(param_unique_filename, index=False)
+
 
 
 def two_normal():
@@ -695,7 +817,9 @@ def kentucky():
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Prepare simulation parameters')
     parser.add_argument('--task', type=str, required=True,
-                       choices=['gaussian', 'gaussian2', 'gaussian_alt_initial', 'two_normal', 'sine', 'sine2', 'sine3', 'sine_test', 'vermont', 'kentucky'],
+                       choices=['gaussian', 'gaussian2', 'gaussian_alt_initial', 
+                       'temp_trop', 'two_normal', 'sine', 'sine2', 'sine3', 
+                       'sine_test', 'vermont', 'kentucky'],
                        help='Type of simulation task')
     
     args = parser.parse_args()
@@ -708,6 +832,9 @@ if __name__ == "__main__":
     elif args.task == 'gaussian_alt_initial':
         print("making parameter files for gaussian task with alternative default B and CTmin.")
         gaussian_alt_initial()
+    elif args.task == 'temp_trop':
+        print("making parameter files for temperate vs. tropical with different population sizes.")
+        temp_trop()
     elif args.task == 'two_normal':
         print("making parameter files for two normal distributions task.")
         two_normal()
