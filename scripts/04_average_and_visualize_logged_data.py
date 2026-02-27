@@ -20,7 +20,7 @@ elif args.task == 'gaussian_alt_initial':
     print("grab param files for gaussain alternative initial condition task.")
     params_unique_path = "./01_prepare_input_parameters/gaussian_alt_initial_params_unique.csv"
     params_path = "./01_prepare_input_parameters/gaussian_alt_initial_params.csv"
-elif args.task == 'temp_trop'
+elif args.task == 'temp_trop':
     print("grab param files for temperate vs. tropical task")
     params_unique_path = "./01_prepare_input_parameters/temp_trop_params_unique.csv"
     params_path = "./01_prepare_input_parameters/temp_trop_params.csv"
@@ -56,7 +56,6 @@ def get_matching_params(unique_row, params_df):
 for idx, unique_row in params_unique.iterrows():
     OUTDIR = unique_row['OUTDIR']
     OUTNAME = unique_row['OUTNAME']
-    RUNTIME = unique_row['RUNTIME']
     
     print(f"Processing parameter set: {OUTNAME}")
     
