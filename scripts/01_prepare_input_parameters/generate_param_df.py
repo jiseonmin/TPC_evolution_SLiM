@@ -377,7 +377,7 @@ def two_normal():
     column_order.insert(idx, 'SEP_MEAN_TEMP')
 
     # scan separation between peaks (0 to 2 * STDEV_TEMP, which is the maximum separation)
-    SEP_MEAN_TEMP_list = [1, 5, 10, 20]
+    SEP_MEAN_TEMP_list = [14, 17, 19, 19.9]
     # OUTNAME will reflect the change of these parameters
 
     # List of parameters to change from default values, but keep constant across all simulations
