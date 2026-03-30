@@ -15,7 +15,7 @@ CSV_FILE="/home/j.min/TPC_evolution_SLiM/scripts/01_prepare_input_parameters/two
 
 module load anaconda3
 eval "$(conda shell.bash hook)"
-conda activate tpc_evo_slim
+conda activate /projects/lotterhos/TPC_evol_SLiM/tpc_evol_slim
 
 # skip header
 LINE_NUM=$((SLURM_ARRAY_TASK_ID + 1))
