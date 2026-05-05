@@ -16,6 +16,8 @@ params_default = {"seed": 13579,
                   "BURNIN": 50,
                   "LOGINTERVAL": 1,
                   "N_POP": 5000,
+                  "MU": 1e-7,
+                  "RECOMBINATION_RATE": 1e-8,
                   "RECOVERY": 'F',
                   "GEN_LEN_DEPENDS_ON_TEMP": 'T',
                   "FIXED_GEN_LEN": 10,
@@ -38,11 +40,12 @@ params_default = {"seed": 13579,
                   }
 
 # We will use the same order of parameters when saving the dataframes
-column_order = ['seed', 'RUNTIME_IF_NO_EXTERNAL_TEMP_DATA', 'BURNIN', 'LOGINTERVAL', 'N_POP', 'RECOVERY',
-        'GEN_LEN_DEPENDS_ON_TEMP', 'FIXED_GEN_LEN', 'USE_EXTERNAL_TEMP_DATA', 
-        'TEMPDATA_PATH', 'MEAN_TEMP', 'STDEV_TEMP', 'NUM_DAYS_TO_REPEAT', 'NUM_REP_TEMP_DATA', 'B_default', 
-        'CTmin_default', 'B_critical', 'DeltaB', 'CTmin_critical', 'DeltaCTmin', 
-        'CTmax_critical', 'DeltaCTmax', 'OUTDIR', 'OUTNAME']
+column_order = ['seed', 'RUNTIME_IF_NO_EXTERNAL_TEMP_DATA', 'BURNIN', 'LOGINTERVAL', 'N_POP', 
+                'MU', 'RECOMBINATION_RATE', 'RECOVERY', 'GEN_LEN_DEPENDS_ON_TEMP', 'FIXED_GEN_LEN', 
+                'USE_EXTERNAL_TEMP_DATA', 'TEMPDATA_PATH', 'MEAN_TEMP', 'STDEV_TEMP', 
+                'NUM_DAYS_TO_REPEAT', 'NUM_REP_TEMP_DATA', 'B_default', 
+                'CTmin_default', 'B_critical', 'DeltaB', 'CTmin_critical', 'DeltaCTmin', 
+                'CTmax_critical', 'DeltaCTmax', 'OUTDIR', 'OUTNAME']
 
 
 def gaussian():
@@ -174,6 +177,7 @@ def gaussian2():
     params_unique['OUTNAME'] = "gaussian2_MEAN_TEMP_" + params_unique['MEAN_TEMP'].astype(str) + "_STDEV_TEMP_" + params_unique['STDEV_TEMP'].astype(str)
     # Save as csv file
     params_unique.to_csv(param_unique_filename, index=False)    
+
 def gaussian_alt_initial():
     '''
     Alternative default values (and initial values) of B and CTmin (B=5, CTmin=33)
@@ -690,26 +694,31 @@ def sine3():
 
 def vermont():
     '''
-    Use vermont NASA POWER data for mean temperature,
-    and add random fluctuation with stdev = 1
-    Generate 4 rows choosing whether generation is temperature dependent or not,
-    and whether to use recovery or no-recovery model
+    Use vermont NASA POWER data for mean temperature, use same hyperparameters as KY example in manuscript
+    repeat with 5 different seeds
     '''
     param_filename = 'VT_params.csv'
     param_unique_filename = 'VT_params_unique.csv'
 
     # List of params to scan
-    RECOVERY_list = ['T', 'F']
-    GEN_LEN_DEPENDS_ON_TEMP_list = ['T', 'F']
+    seed_list = range(5)
     # OUTNAME will reflect the change of these parameters
 
     # List of parameters to change from default values, but keep constant across all simulations
     # cycle through data from 2015-1-1 to 2020-12-31, 200 times
     NUM_DAYS_TO_REPEAT = 2192
-    NUM_REP_TEMP_DATA = 200
+    NUM_REP_TEMP_DATA = 20
+
+    MU = 1e-6
+    FIXED_GEN_LEN = 21
+    B_default = 30
+    CTmin_default = 0
+    B_critical = 30
+    CTmin_critical = 1.5
+    CTmax_critical = 40
 
     BURNIN = 5000
-    STDEV_TEMP = 1
+    STDEV_TEMP = 0
     N_POP = 5000
     TEMPDATA_PATH = "./VT_weather.txt"
     OUTDIR = "/projects/lotterhos/TPC_evol_SLiM"
@@ -719,18 +728,24 @@ def vermont():
     # Loop through all combinations of parameters to scan
     # For each combination, create a new parameter dictionary, add it to the parameter list
     params_list = []
-    for i, (recovery, gen_len_depends_on_temp) in enumerate(itertools.product(RECOVERY_list, GEN_LEN_DEPENDS_ON_TEMP_list)):
+    for i, seed in enumerate(seed_list):
         new_row = {
                 'NUM_DAYS_TO_REPEAT': NUM_DAYS_TO_REPEAT,
                 'NUM_REP_TEMP_DATA': NUM_REP_TEMP_DATA,
+                'MU': MU,
+                'FIXED_GEN_LEN': FIXED_GEN_LEN,
+                'B_default': B_default,
+                'CTmin_default': CTmin_default,
+                'B_critical': B_critical,
+                'CTmin_critical': CTmin_critical,
+                'CTmax_critical': CTmax_critical,
                 'BURNIN': BURNIN,
                 'STDEV_TEMP': STDEV_TEMP,
                 'N_POP': N_POP,
                 'TEMPDATA_PATH': TEMPDATA_PATH,
                 'OUTDIR': OUTDIR,
-                'RECOVERY': recovery,
-                'GEN_LEN_DEPENDS_ON_TEMP': gen_len_depends_on_temp,
-                'OUTNAME': f"VT_RECOVERY_{recovery}_GEN_LEN_DEPENDS_ON_TEMP_{gen_len_depends_on_temp}"
+                'seed': seed,
+                'OUTNAME': f"VT_autocorrelated_{seed}"
                 }
         for key in params_default.keys():
             if key not in new_row.keys():
@@ -747,32 +762,36 @@ def vermont():
     # Drop seed and outname columns
     params_unique = params.drop(columns=['seed', 'OUTNAME']).drop_duplicates().reset_index(drop=True)
     # Add OUTNAME again without seed
-    params_unique['OUTNAME'] = "VT_RECOVERY_" + \
-        params_unique['RECOVERY'].astype(str) + \
-            "_GEN_LEN_DEPENDS_ON_TEMP_" + \
-                params_unique['GEN_LEN_DEPENDS_ON_TEMP'].astype(str)
+    params_unique['OUTNAME'] = "VT_autocorrelated"
     # Save as csv file
     params_unique.to_csv(param_unique_filename, index=False)
 
 def kentucky():
     '''
-    Use KY NASA POWER data for mean temperature,
-    and add random fluctuation with stdev = 1
+    Use KY NASA POWER, repeat 5 times with different seeds
     '''
     param_filename = 'KY_params.csv'
     param_unique_filename = 'KY_params_unique.csv'
+
+
+    # List of params to scan
+    seed_list = range(5)
+    # OUTNAME will reflect the change of these parameters
 
     # List of parameters to change from default values, but keep constant across all simulations
     # cycle through data from 1981-1-1 to 1986-12-31, 200 times
     NUM_DAYS_TO_REPEAT = 2191
     NUM_REP_TEMP_DATA = 200
+    MU = 1e-6
+    FIXED_GEN_LEN = 21
+    B_default = 30
+    CTmin_default = 0
+    B_critical = 30
+    CTmin_critical = 1.5
+    CTmax_critical = 40
 
-    # List of params to scan
-    GEN_LEN_DEPENDS_ON_TEMP_list = ['T', 'F']
-
-    RECOVERY = 'F'
     BURNIN = 5000
-    STDEV_TEMP = 1
+    STDEV_TEMP = 0
     N_POP = 5000
     TEMPDATA_PATH = "./KY_timeseries.csv"
     OUTDIR = "/projects/lotterhos/TPC_evol_SLiM"
@@ -782,18 +801,23 @@ def kentucky():
     # Loop through all combinations of parameters to scan
     # For each combination, create a new parameter dictionary, add it to the parameter list
     params_list = []
-    for i, gen_len_depends_on_temp in enumerate(GEN_LEN_DEPENDS_ON_TEMP_list):
+    for i, seed in enumerate(seed_list):
         new_row = {
                 'NUM_DAYS_TO_REPEAT': NUM_DAYS_TO_REPEAT,
                 'NUM_REP_TEMP_DATA': NUM_REP_TEMP_DATA,
+                'MU': MU,
+                'FIXED_GEN_LEN': FIXED_GEN_LEN,
+                'B_default': B_default,
+                'CTmin_default': CTmin_default,
+                'B_critical': B_critical,
+                'CTmin_critical': CTmin_critical,
+                'CTmax_critical': CTmax_critical,
                 'BURNIN': BURNIN,
                 'STDEV_TEMP': STDEV_TEMP,
                 'N_POP': N_POP,
                 'TEMPDATA_PATH': TEMPDATA_PATH,
                 'OUTDIR': OUTDIR,
-                'RECOVERY': RECOVERY,
-                'GEN_LEN_DEPENDS_ON_TEMP': gen_len_depends_on_temp,
-                'OUTNAME': f"KY_GEN_LEN_DEPENDS_ON_TEMP_{gen_len_depends_on_temp}"
+                'OUTNAME': f"KY_{seed}"
                 }
         for key in params_default.keys():
             if key not in new_row.keys():
@@ -810,10 +834,10 @@ def kentucky():
     # Drop seed and outname columns
     params_unique = params.drop(columns=['seed', 'OUTNAME']).drop_duplicates().reset_index(drop=True)
     # Add OUTNAME again without seed
-    params_unique['OUTNAME'] = "KY_GEN_LEN_DEPENDS_ON_TEMP_" + \
-                params_unique['GEN_LEN_DEPENDS_ON_TEMP'].astype(str)
+    params_unique['OUTNAME'] = "KY"
     # Save as csv file
     params_unique.to_csv(param_unique_filename, index=False)       
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Prepare simulation parameters')
     parser.add_argument('--task', type=str, required=True,
