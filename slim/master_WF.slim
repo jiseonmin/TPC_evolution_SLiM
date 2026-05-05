@@ -23,27 +23,6 @@ initialize() {
 	// Environmental noise sampled from a gaussian with zero mean and variance = ENV_var gets added to the sum of effect sizes of QTNs to determine B and CTmin
 	defineConstant("ENV_var", 0.5);
 	
-	// The genome is 100kbp long.
-	// first 20k and last 2k segments are mutation-free in the forward-simulation because they are neutral loci. The neutral mutations can be overlayed on top of the tree sequence after the SLiM simulation. This is much faster than adding neutral mutation during the SLiM simulation.
-	defineConstant("MU", 1e-7);
-	initializeMutationRate(c(0, MU, 0), ends=c(20000, 80000, 99999));
-	
-	// Middle section of the genome is our "QTN region", where each mutation has a 50-50 chance of either being a QTN for CTmin or B.
-	initializeGenomicElementType("g2", c(m2, m3), c(0.5, 0.5));
-	initializeGenomicElement(g2, 20001, 80000);
-	
-	// The QTN region is divided into 12 linkage groups of equal length, and recombination happens at uniform rate otherwise
-	defineConstant("RECOMBINATION_RATE", 1e-8);
-	defineConstant("NUM_LINKAGE_GROUPS", 12);
-	rates = c(rep(c(RECOMBINATION_RATE, 0.5), NUM_LINKAGE_GROUPS - 1), RECOMBINATION_RATE);
-	group_length = integerDiv(60000, NUM_LINKAGE_GROUPS);
-	ends = NULL;
-	for (i in seq(1, NUM_LINKAGE_GROUPS - 1)) {
-		ends = c(ends, 20000 + group_length * i, 20000 + group_length * i + 1);
-	}
-	ends = c(ends, 99999);
-	initializeRecombinationRate(rates, ends);
-	
 	
 	// Define default parameter values. Each can be modified when this script is run on command line.
 	params = Dictionary(
@@ -56,6 +35,10 @@ initialize() {
 		"LOGINTERVAL", 1,
 		// population size throughout the simulation 
 		"N_POP", 5000,
+		// mutation rate
+		"MU", 1e-7,
+		// recombination rate
+		"RECOMBINATION_RATE", 1e-8,
 		// Use recovery model if True, use no-recovery model if False (default) to determine fitness for each generation.
 		"RECOVERY", F,
 		// If True, generation length depends on temperature at the beginning of each generation. If False (default), generation length is FIXED_GEN_LEN throughout the simulation. 
@@ -103,6 +86,24 @@ initialize() {
 	defineConstant("PARAMS", params);
 	setSeed(seed);
 	
+	// The genome is 100kbp long.
+	// first 20k and last 2k segments are mutation-free in the forward-simulation because they are neutral loci. The neutral mutations can be overlayed on top of the tree sequence after the SLiM simulation. This is much faster than adding neutral mutation during the SLiM simulation.
+	initializeMutationRate(c(0, MU, 0), ends=c(20000, 80000, 99999));
+	
+	// Middle section of the genome is our "QTN region", where each mutation has a 50-50 chance of either being a QTN for CTmin or B.
+	initializeGenomicElementType("g2", c(m2, m3), c(0.5, 0.5));
+	initializeGenomicElement(g2, 20001, 80000);
+	
+	// The QTN region is divided into 12 linkage groups of equal length, and recombination happens at uniform rate otherwise
+	defineConstant("NUM_LINKAGE_GROUPS", 12);
+	rates = c(rep(c(RECOMBINATION_RATE, 0.5), NUM_LINKAGE_GROUPS - 1), RECOMBINATION_RATE);
+	group_length = integerDiv(60000, NUM_LINKAGE_GROUPS);
+	ends = NULL;
+	for (i in seq(1, NUM_LINKAGE_GROUPS - 1)) {
+		ends = c(ends, 20000 + group_length * i, 20000 + group_length * i + 1);
+	}
+	ends = c(ends, 99999);
+	initializeRecombinationRate(rates, ends);
 	
 	// Now decide where to save output files and how to name them.
 	// Note that quotation marks are removed from command line, so you should type something like -d OUTDIR=\'./newdir\'
