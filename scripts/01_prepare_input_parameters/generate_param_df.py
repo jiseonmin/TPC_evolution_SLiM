@@ -711,6 +711,7 @@ def vermont():
 
     MU = 1e-6
     FIXED_GEN_LEN = 21
+    GEN_LEN_DEPENDS_ON_TEMP = 'F'
     B_default = 30
     CTmin_default = 0
     B_critical = 30
@@ -734,6 +735,7 @@ def vermont():
                 'NUM_REP_TEMP_DATA': NUM_REP_TEMP_DATA,
                 'MU': MU,
                 'FIXED_GEN_LEN': FIXED_GEN_LEN,
+                'GEN_LEN_DEPENDS_ON_TEMP': GEN_LEN_DEPENDS_ON_TEMP,
                 'B_default': B_default,
                 'CTmin_default': CTmin_default,
                 'B_critical': B_critical,
@@ -784,6 +786,7 @@ def kentucky():
     NUM_REP_TEMP_DATA = 200
     MU = 1e-6
     FIXED_GEN_LEN = 21
+    GEN_LEN_DEPENDS_ON_TEMP = 'F'
     B_default = 30
     CTmin_default = 0
     B_critical = 30
@@ -807,6 +810,7 @@ def kentucky():
                 'NUM_REP_TEMP_DATA': NUM_REP_TEMP_DATA,
                 'MU': MU,
                 'FIXED_GEN_LEN': FIXED_GEN_LEN,
+                'GEN_LEN_DEPENDS_ON_TEMP': GEN_LEN_DEPENDS_ON_TEMP,
                 'B_default': B_default,
                 'CTmin_default': CTmin_default,
                 'B_critical': B_critical,
