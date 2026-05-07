@@ -1,6 +1,5 @@
-// Simulating TPC evolution using a Wright-Fisher model, assuming CTmin and B are polygenic traits.
-// Control experiment where external temperature data is scrambled to test the effect of seasonality while keeping the overall temperature distribution.
-// Same as the original sim, the daily temperature is shared across every individual on the same day, but they individually add a small noise to the daily temperature.
+// Control experiment where KY time series is scrambled to test the effect of seasonality while keeping the overall temperature distribution.
+// params are not editable from shell scripts unlike the master slim script
 
 initialize() {
 	initializeTreeSeq();
@@ -27,7 +26,7 @@ initialize() {
 	
 	// The genome is 100kbp long.
 	// first 20k and last 2k segments are mutation-free in the forward-simulation because they are neutral loci. The neutral mutations can be overlayed on top of the tree sequence after the SLiM simulation. This is much faster than adding neutral mutation during the SLiM simulation.
-	defineConstant("MU", 1e-7);
+	defineConstant("MU", 1e-6);
 	initializeMutationRate(c(0, MU, 0), ends=c(20000, 80000, 99999));
 	
 	// Middle section of the genome is our "QTN region", where each mutation has a 50-50 chance of either being a QTN for CTmin or B.
@@ -46,67 +45,33 @@ initialize() {
 	ends = c(ends, 99999);
 	initializeRecombinationRate(rates, ends);
 	
-	
-	// Define default parameter values. Each can be modified when this script is run on command line.
-	params = Dictionary(
-		"seed", 13579,
-		// total number of generations, independent of the length of timeseries data since we sample temp randomly from the list.
-		"RUNTIME", 20000,
-		// QTN has no effect on fitness for the first BURNIN generations. This is to accumulate some amount of genetic variation before non-neutral dynamics. 
-		"BURNIN", 5000,
-		// Time in generation between which SLiM records information in a log file
-		"LOGINTERVAL", 1,
-		// population size throughout the simulation 
-		"N_POP", 5000,
-		// Use recovery model if True, use no-recovery model if False (default) to determine fitness for each generation.
-		"RECOVERY", F,
-		// If True, generation length depends on temperature at the beginning of each generation. If False (default), generation length is FIXED_GEN_LEN throughout the simulation. 
-		"GEN_LEN_DEPENDS_ON_TEMP", F,
-		"FIXED_GEN_LEN", 10,
-		"TEMPDATA_PATH", "./VT_weather.txt",
-		// Individuals of the same day can experience different temperature. Thus, a random noise sampled from Normal(0, STDEV_TEMP) is added to daily temperature to define individual's daily temperature.
-		"STDEV_TEMP", 1,
-		// Starting value of B without any QTNs.
-		"B_default", 31, // default B (WT stands for wild-type since this is B if there is no QTN mutations)
-		// Stating value of CTmin without any QTNs.
-		"CTmin_default", 5, // default CTmin
-		
-		//////////////////////////
-		// params for TPC model.//
-		////////////////////////// 
-		"B_critical", 40,
-		"DeltaB", 2,
-		"CTmin_critical", 0,
-		"DeltaCTmin", 2,
-		"CTmax_critical", 40,
-		"DeltaCTmax", 0.2
-		////////////////////////////////
-		// end of params for TPC model//
-		////////////////////////////////
-		
-		);
-	for (k in params.allKeys) {
-		// if the parameter is not modified with -d, get default value from dictionary.
-		if (!exists(k)) {
-			defineConstant(k, params.getValue(k));
-		}
-		// if you used -d, replace value in params dictionary with the input value
-		else {
-			params.setValue(k, executeLambda(paste(c(k, ";"), sep='')));
-		}
-	}
-	defineConstant("PARAMS", params);
+	defineConstant("seed", 13579);
+	defineConstant("RUNTIME", 20000);
+	// QTN has no effect on fitness for the first BURNIN generations. This is to accumulate some amount of genetic variation before non-neutral dynamics. 
+	defineConstant("BURNIN", 5000);
+	// Time in generation between which SLiM records information in a log file
+	defineConstant("LOGINTERVAL", 1);
+	// population size throughout the simulation 
+	defineConstant("N_POP", 5000);
+	defineConstant("RECOVERY", F);
+	defineConstant("GEN_LEN_DEPENDS_ON_TEMP", F);
+	defineConstant("FIXED_GEN_LEN", 21);
+	defineConstant("TEMPDATA_PATH", "./VT_weather.txt");
+	defineConstant("STDEV_TEMP", 0);
+	defineConstant("B_default", 30);
+	defineConstant("CTmin_default", 0);
+	defineConstant("B_critical", 30);
+	defineConstant("DeltaB", 2);
+	defineConstant("CTmin_critical", 1.5);
+	defineConstant("DeltaCTmin", 2);
+	defineConstant("CTmax_critical", 40);
+	defineConstant("DeltaCTmax", 0.2);
 	setSeed(seed);
-	
-	
-	// Now decide where to save output files and how to name them.
-	// Note that quotation marks are removed from command line, so you should type something like -d OUTDIR=\'./newdir\'
-	// Output files will be saved to 'data' folder outside 'slim'.
-	if (!exists("OUTDIR")) defineConstant("OUTDIR", "/projects/lotterhos/TPC_evol_SLiM");
-	if (!exists("OUTNAME")) defineConstant("OUTNAME", "VT_scrambled");
+	defineConstant("OUTDIR", "../data");
 	if (!fileExists(OUTDIR)) {
 		createDirectory(OUTDIR);
 	}
+	defineConstant("OUTNAME", "VT_scrambled");
 }
 
 // Effects of m2 (QTN_B) and mu3 (QTM_CTmin) are accounted for later in fitnesEffect Callback. Before that step, they shouldn't change the fitness.
@@ -218,7 +183,7 @@ fitnessEffect() {
 
 RUNTIME late() {
 	// save tree sequence
-	sim.treeSeqOutput(OUTDIR+"/"+OUTNAME+".trees", metadata = PARAMS);
+	sim.treeSeqOutput(OUTDIR+"/"+OUTNAME+".trees");
 	sim.simulationFinished();
 }
 
