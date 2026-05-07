@@ -1,6 +1,6 @@
 seed,RUNTIME_IF_NO_EXTERNAL_TEMP_DATA,BURNIN,LOGINTERVAL,N_POP,MU,RECOMBINATION_RATE,RECOVERY,GEN_LEN_DEPENDS_ON_TEMP,FIXED_GEN_LEN,USE_EXTERNAL_TEMP_DATA,TEMPDATA_PATH,MEAN_TEMP,STDEV_TEMP,NUM_DAYS_TO_REPEAT,NUM_REP_TEMP_DATA,B_default,CTmin_default,B_critical,DeltaB,CTmin_critical,DeltaCTmin,CTmax_critical,DeltaCTmax,OUTDIR,OUTNAME
-13579,200,5000,1,5000,1e-06,1e-08,F,F,21,T,./KY_timeseries.csv,5,0,2191,200,30,0,30,2,1.5,2,40,0.2,/projects/lotterhos/TPC_evol_SLiM,KY_0
-13579,200,5000,1,5000,1e-06,1e-08,F,F,21,T,./KY_timeseries.csv,5,0,2191,200,30,0,30,2,1.5,2,40,0.2,/projects/lotterhos/TPC_evol_SLiM,KY_1
-13579,200,5000,1,5000,1e-06,1e-08,F,F,21,T,./KY_timeseries.csv,5,0,2191,200,30,0,30,2,1.5,2,40,0.2,/projects/lotterhos/TPC_evol_SLiM,KY_2
-13579,200,5000,1,5000,1e-06,1e-08,F,F,21,T,./KY_timeseries.csv,5,0,2191,200,30,0,30,2,1.5,2,40,0.2,/projects/lotterhos/TPC_evol_SLiM,KY_3
-13579,200,5000,1,5000,1e-06,1e-08,F,F,21,T,./KY_timeseries.csv,5,0,2191,200,30,0,30,2,1.5,2,40,0.2,/projects/lotterhos/TPC_evol_SLiM,KY_4
+0,200,5000,1,5000,1e-06,1e-08,F,F,21,T,./KY_timeseries.csv,5,0,2191,200,30,0,30,2,1.5,2,40,0.2,/projects/lotterhos/TPC_evol_SLiM,KY_0
+1,200,5000,1,5000,1e-06,1e-08,F,F,21,T,./KY_timeseries.csv,5,0,2191,200,30,0,30,2,1.5,2,40,0.2,/projects/lotterhos/TPC_evol_SLiM,KY_1
+2,200,5000,1,5000,1e-06,1e-08,F,F,21,T,./KY_timeseries.csv,5,0,2191,200,30,0,30,2,1.5,2,40,0.2,/projects/lotterhos/TPC_evol_SLiM,KY_2
+3,200,5000,1,5000,1e-06,1e-08,F,F,21,T,./KY_timeseries.csv,5,0,2191,200,30,0,30,2,1.5,2,40,0.2,/projects/lotterhos/TPC_evol_SLiM,KY_3
+4,200,5000,1,5000,1e-06,1e-08,F,F,21,T,./KY_timeseries.csv,5,0,2191,200,30,0,30,2,1.5,2,40,0.2,/projects/lotterhos/TPC_evol_SLiM,KY_4

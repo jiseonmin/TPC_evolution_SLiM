@@ -821,6 +821,7 @@ def kentucky():
                 'N_POP': N_POP,
                 'TEMPDATA_PATH': TEMPDATA_PATH,
                 'OUTDIR': OUTDIR,
+                'seed': seed,
                 'OUTNAME': f"KY_{seed}"
                 }
         for key in params_default.keys():
