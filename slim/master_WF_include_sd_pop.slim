@@ -195,7 +195,7 @@ mutationEffect(m3) { return 1.0; }
 	catn("generation length " + GEN_LEN);
 	// find daily temperatures at population level
 	// Find shared thermal noise that will be added to the mean temperature
-	shared_thermal_noise = rnorm(length(GEN_LEN), sd=STDEV_TEMP_POP);
+	shared_thermal_noise = rnorm(GEN_LEN, sd=STDEV_TEMP_POP);
 	// if external temperature data is used, subset data with index DAY_COUNTER to DAY_COUNTER + GEN_LEN -1.
 	if (USE_EXTERNAL_TEMP_DATA) {
 		defineGlobal("DAILY_TEMPS_AT_CURRENT_GEN", DAILY_TEMP_DATA[DAY_COUNTER:(DAY_COUNTER+GEN_LEN-1)] + shared_thermal_noise);
