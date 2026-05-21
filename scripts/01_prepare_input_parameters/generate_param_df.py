@@ -483,7 +483,7 @@ def include_sd_pop():
                 'STDEV_TEMP_POP': stdev_temp_pop,
                 'seed': seed,
                 'OUTDIR': OUTDIR,
-                'OUTNAME': f"include_STDEV_POP_prop_{prop_pop_var}_seed_{seed}"
+                'OUTNAME': f"include_STDEV_POP_prop_{prop_pop_var:.1f}_seed_{seed}"
                 }
         for key in params_default.keys():
             if key not in new_row.keys():
