@@ -431,6 +431,73 @@ def two_normal():
     # Save as csv file
     params_unique.to_csv(param_unique_filename, index=False)
 
+def include_sd_pop():
+    '''
+    Adding shared thermal noise for all individuals in current population
+    (i.e. thermal noise is sum of individual and population noise)
+    This uses a different slim script, and there is an additional column (like two-normal case)
+    Don't make params_unique because analytical prediction doesn't distinguish sd_individual or sd_pop
+    '''
+    param_filename = 'include_sd_pop_params.csv'
+    param_unique_filename = 'include_sd_pop_params_unique.csv'
+    # this task needs extra parameterS (STDEV_TEMP_POP) and (STDEV_TEMP_INDIVIDUAL) and no STDEV_TEMP
+    idx = column_order.index('STDEV_TEMP')
+    column_order.insert(idx, 'STDEV_TEMP_INDIVIDUAL')
+    column_order.insert(idx, 'STDEV_TEMP_POP')
+    column_order.pop(idx+2)
+    print(column_order)
+
+    # Creating list of parameters
+    # Keep total variance (stdev) constant, change the proportion from 0 to 1
+    STDEV_TEMP = 10
+
+    prop_pop_var_list = np.linspace(0, 1, 11)
+    seed_list = range(30)
+
+    # OUTNAME will reflect the change of these parameters
+
+    # List of parameters to change from default values, but keep constant across all simulations
+    RUNTIME_IF_NO_EXTERNAL_TEMP_DATA = 20_000 # except runtime is edited for one of the mean & stdev combination (see if statement later)
+    BURNIN = 5000
+    GEN_LEN_DEPENDS_ON_TEMP = 'F'
+    USE_EXTERNAL_TEMP_DATA = 'F'
+    OUTDIR = "/scratch/j.min/TPC_evol_SLiM"
+    MEAN_TEMP = 35
+
+    # Other params will use values from params_default
+
+    
+    # Loop through all combinations of parameters to scan (in this case, seed, proportion of var_ind)
+    # For each combination, create a new parameter dictionary, add it to the parameter list
+    params_list = []
+    for i, (seed, prop_pop_var) in enumerate(itertools.product(seed_list, prop_pop_var_list)):
+        stdev_temp_pop = STDEV_TEMP * np.sqrt(prop_pop_var)
+        stdev_temp_individual = np.sqrt(STDEV_TEMP ** 2 - stdev_temp_pop ** 2)
+        new_row = {
+                'RUNTIME_IF_NO_EXTERNAL_TEMP_DATA': RUNTIME_IF_NO_EXTERNAL_TEMP_DATA,
+                'BURNIN': BURNIN,
+                'GEN_LEN_DEPENDS_ON_TEMP': GEN_LEN_DEPENDS_ON_TEMP,
+                'USE_EXTERNAL_TEMP_DATA': USE_EXTERNAL_TEMP_DATA,
+                'MEAN_TEMP': MEAN_TEMP,
+                'STDEV_TEMP_INDIVIDUAL': stdev_temp_individual,
+                'STDEV_TEMP_POP': stdev_temp_pop,
+                'seed': seed,
+                'OUTDIR': OUTDIR,
+                'OUTNAME': f"include_STDEV_POP_prop_{prop_pop_var}"
+                }
+        for key in params_default.keys():
+            if key not in new_row.keys():
+                new_row[key] = params_default[key]
+        params_list.append(new_row)
+
+    # Save the parameter list
+    params = pd.DataFrame(params_list)
+    # Re-order columns (matches the order in slurm script in next step)
+    params = params[column_order]
+    # Save as csv file
+    params.to_csv(param_filename, index=False)
+
+
 def sine():
     '''
     Assume mean temperature fluctuates sinusoidally between 0 and 35.
@@ -847,7 +914,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Prepare simulation parameters')
     parser.add_argument('--task', type=str, required=True,
                        choices=['gaussian', 'gaussian2', 'gaussian_alt_initial', 
-                       'temp_trop', 'two_normal', 'sine', 'sine2', 'sine3', 
+                       'temp_trop', 'two_normal', 'include_sd_pop', 'sine', 'sine2', 'sine3', 
                        'sine_test', 'vermont', 'kentucky'],
                        help='Type of simulation task')
     
@@ -867,6 +934,9 @@ if __name__ == "__main__":
     elif args.task == 'two_normal':
         print("making parameter files for two normal distributions task.")
         two_normal()
+    elif args.task == 'include_sd_pop':
+        print("making parameter files for including sd_pop")
+        include_sd_pop()
     elif args.task == 'sine':
         print("making parameter files for sine task.")
         sine()
