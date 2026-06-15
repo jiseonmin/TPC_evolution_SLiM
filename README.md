@@ -38,5 +38,5 @@ See `scripts/README.md` for detailed instructions.
 ## Repository Structure
 - `slim/` - Master SLiM script and documentation
 - `scripts/` - Parameter preparation, execution, and analysis scripts
-- `data/` - List of data needed for running the notebooks in `notebooks` is in `data_for_main_figures.txt` and `data_for_SI_figures.txt`. Download those files from our Zenodo (pending) before running the notebooks.
-- `notebooks/` - Notebooks for generating figures and tables from the manuscript
+- `data/` - List of data needed for running the notebooks in `notebooks` is in `data_for_main_figures.txt` and `data_for_SI_figures.txt`. Data files will be uploaded to Zenodo.
+- `notebooks/` - Python scripts for generating figures and tables from the manuscript. Run scripts (either .py or .ipynb) with required `data/` files downloaded from Zenodo, and the figures will be saved in `figures/` in the same order as in the manuscript. You can see the output figures from the jupyter notebooks without running them. 
