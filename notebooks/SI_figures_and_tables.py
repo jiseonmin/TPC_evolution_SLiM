@@ -21,6 +21,18 @@ tpc_object = tpc_functions()
 import tskit
 from matplotlib.lines import Line2D
 datadir = "../data/"
+
+
+# Track data files that are used for figures and write their paths to a text file at the end
+_accessed = set()
+def _track(fn):
+    def wrapped(path, *a, **k):
+        _accessed.add(os.path.abspath(path))
+        return fn(path, *a, **k)
+    return wrapped
+pd.read_csv = _track(pd.read_csv)
+np.load     = _track(np.load)
+tskit.load  = _track(tskit.load)
 # %%
 # Figure S1
 plt.rcParams.update({'font.size': 15})
@@ -1137,4 +1149,12 @@ summary_df = final_tpc_classified_df.groupby(['mean_T', 'std_T']).agg({
 })
 print(summary_df)
 # print(summary_df.to_latex())
+# %%
+
+# %%
+# Save path to all data files needed for this script
+datadir = os.path.abspath("../data")
+needed = sorted(p for p in _accessed if p.startswith(datadir))
+with open("../data/data_for_SI_figures.txt", "w") as f:
+    f.write("\n".join(os.path.relpath(p, datadir) for p in needed))
 # %%

@@ -20,6 +20,17 @@ tpc_object = tpc_functions()
 import tskit
 from matplotlib.lines import Line2D
 datadir = "../data/"
+
+# Track data files that are used for figures and write their paths to a text file at the end
+_accessed = set()
+def _track(fn):
+    def wrapped(path, *a, **k):
+        _accessed.add(os.path.abspath(path))
+        return fn(path, *a, **k)
+    return wrapped
+pd.read_csv = _track(pd.read_csv)
+np.load     = _track(np.load)
+tskit.load  = _track(tskit.load)
 # %%
 # Figure 1A
 Tlist = np.linspace(-5, 40, 400)
@@ -363,3 +374,11 @@ for i in range(4):
 fig.savefig("../figures/Fig4_sinusoidal.pdf", bbox_inches='tight')
 # %%
 # Figure 5 - Todo
+
+# %%
+# Save path to all data files needed for this script
+datadir = os.path.abspath("../data")
+needed = sorted(p for p in _accessed if p.startswith(datadir))
+with open("../data/data_for_main_figures.txt", "w") as f:
+    f.write("\n".join(os.path.relpath(p, datadir) for p in needed))
+# %%
