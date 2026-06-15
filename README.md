@@ -38,5 +38,5 @@ See `scripts/README.md` for detailed instructions.
 ## Repository Structure
 - `slim/` - Master SLiM script and documentation
 - `scripts/` - Parameter preparation, execution, and analysis scripts
-- `data/` - Input data for notebooks
-- `notebooks/` - Notebooks for generating figures and interactive notebooks (not added yet)
+- `data/` - List of data needed for running the notebooks in `notebooks` is in `data_for_main_figures.txt` and `data_for_SI_figures.txt`. Download those files from our Zenodo (pending) before running the notebooks.
+- `notebooks/` - Notebooks for generating figures and tables from the manuscript
