@@ -22,12 +22,8 @@ slim/master_WF_modified.slim
 # In general, don't track data files. 
 data/*
 # List any files that we should keep in github
-!data/gaussian_MEAN_TEMP_20_STDEV_TEMP_10_analytical_info.npz
-!data/gaussian_MEAN_TEMP_20_STDEV_TEMP_10_seed_0.txt
-!data/gaussian_MEAN_TEMP_20_STDEV_TEMP_10_seed_0.csv
-!data/gaussian_MEAN_TEMP_20_STDEV_TEMP_10_seed_0.trees
-!data/sine_RECOVERY_F_GEN_LEN_DEPENDS_ON_TEMP_F.txt
-!data/sine_RECOVERY_F_GEN_LEN_DEPENDS_ON_TEMP_F_analytical_info.npz
+!data/data_for_main_figures.txt
+!data/data_for_SI_figures.txt
 
 # don't track experimental notebooks.
 notebooks/gaussian_experiment.ipynb
