@@ -86,4 +86,15 @@ At BURNIN generation, log file is generated with these columns:
 
 Note that 'cycle' means generation for Wright-Fisher simulations in SLiM. 'day' is the first day of the generation; 0 corresponds to the first temperature in the external temperature data. Temp is the daily temperature on 'day' at population level (i.e. doesn't consider individual variation). Mean and standard deviation of various parameters are calculated among all individuals present in 'cycle' generation. 
 
-Lastly, in the last 100 generations of simulation, 100 individuals are randomly drawn from the population, and their $B$ and $CTmin$ are appended to a vector named `LINES`, which is saved as a csv file at the end of the simulation. 
+Lastly, in the last 100 generations of simulation, 100 individuals are randomly drawn from the population, and their $B$ and $CTmin$ are appended to a vector named `LINES`, which is saved as a csv file at the end of the simulation.
+
+# Other slim scripts in this folder
+There are some variation of `master_WF.slim` that were used in the paper.
+
+- `scramble_temp_data.slim`: samples daily temperature from timeseries data with uniform weights. Used for Figure S15 non-autocorrelated VT curve.
+
+- `two_normal.slim`: Sample temperature from a mixture of two normal distributions, instead of a single Gaussian distribution. Used for Figure S5.
+
+- `variable_N.slim`: a WF simulation where population size at each generation is determined by the body temperature on the first day of that generation. Not used in the manuscript.
+
+- `master_WF_include_sd_pop.slim`: Compared to the constant environment simulations where mean body temperature is constant and individual adds noise independently, this script lets you add noise to the mean temperature itself. Not used in the manuscript.
