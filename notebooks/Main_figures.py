@@ -12,6 +12,7 @@ import random
 
 import scipy
 import sys
+import os
 sys.path.insert(1, '../scripts/03_analytical_prediction')
 from tpc_functions_oo import *
 tpc_object = tpc_functions()
