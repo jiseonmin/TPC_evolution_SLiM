@@ -1,3 +1,4 @@
+CTminSeasonality.csv
 gaussian_MEAN_TEMP_20_STDEV_TEMP_1_analytical_info.npz
 gaussian_MEAN_TEMP_20_STDEV_TEMP_1_seed_29.csv
 gaussian_MEAN_TEMP_20_STDEV_TEMP_3_analytical_info.npz
@@ -11,3 +12,20 @@ gaussian_MEAN_TEMP_5_STDEV_TEMP_1_seed_29.csv
 gaussian_MEAN_TEMP_5_STDEV_TEMP_3_analytical_info.npz
 gaussian_MEAN_TEMP_5_STDEV_TEMP_3_seed_29.csv
 sine_test_CTmin_critical_0_B_critical_20.txt
+tp10_9.trees
+tp11_9.trees
+tp12_9.trees
+tp1_7.txt
+tp1_9.trees
+tp2_7.txt
+tp2_9.trees
+tp3_7.txt
+tp3_9.trees
+tp4_7.txt
+tp4_9.trees
+tp5_7.txt
+tp5_9.trees
+tp6_9.trees
+tp7_9.trees
+tp8_9.trees
+tp9_9.trees

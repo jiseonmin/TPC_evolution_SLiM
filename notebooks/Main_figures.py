@@ -4,11 +4,11 @@ import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
 from matplotlib.colors import Normalize
 from matplotlib import cm
-import matplotlib as mpl
-
+from matplotlib.legend_handler import HandlerBase
 import numpy as np
 import pandas as pd
 import random
+
 
 import scipy
 import sys
@@ -348,7 +348,7 @@ ax_bottom_right.scatter(tropical_CTmins, tropical_Bs, marker='o', edgecolor='w',
 fig.savefig('../figures/Fig2_sample_tpcs.pdf', bbox_inches='tight')
 
 # %%
-# Figure 4
+# Figure 3
 CTmin_critical = 0
 B_critical = 20
 log = pd.read_csv(f"{datadir}sine_test_CTmin_critical_{CTmin_critical}_B_critical_{B_critical}.txt")
@@ -372,9 +372,203 @@ for i in range(4):
     ax2.set_yticks(np.arange(0, 35.2, 17.5))
     ax2.tick_params(axis='y', labelcolor='grey')
 
-fig.savefig("../figures/Fig4_sinusoidal.pdf", bbox_inches='tight')
+fig.savefig("../figures/Fig3_sinusoidal.pdf", bbox_inches='tight')
 # %%
-# Figure 5 - Todo
+# Figure 4
+
+
+# to get trees for boxplot (flexible for names of .trees files)
+TP_INFO = {
+    'tp1_9':  {'date': '2023-07-19', 'year': 2023, 'timepoint': 'First'},
+    'tp2_9':  {'date': '2023-08-21', 'year': 2023, 'timepoint': 'Second'},
+    'tp3_9':  {'date': '2023-10-03', 'year': 2023, 'timepoint': 'Third'},
+    'tp4_9':  {'date': '2022-07-26', 'year': 2022, 'timepoint': 'First'},
+    'tp5_9':  {'date': '2022-09-06', 'year': 2022, 'timepoint': 'Second'},
+    'tp6_9':  {'date': '2022-10-16', 'year': 2022, 'timepoint': 'Third'},
+    'tp7_9':  {'date': '2021-07-14', 'year': 2021, 'timepoint': 'First'},
+    'tp8_9':  {'date': '2021-08-25', 'year': 2021, 'timepoint': 'Second'},
+    'tp9_9':  {'date': '2021-10-06', 'year': 2021, 'timepoint': 'Third'},
+    'tp10_9': {'date': '2020-07-17', 'year': 2020, 'timepoint': 'First'},
+    'tp11_9': {'date': '2020-08-26', 'year': 2020, 'timepoint': 'Second'},
+    'tp12_9': {'date': '2020-10-17', 'year': 2020, 'timepoint': 'Third'},
+}
+
+# simulation replicates (flexible file path)
+SIM_REPLICATES = {
+    'rep1': {'file': f'{datadir}/tp1_7.txt', 'color': '#22f5e7'},
+    'rep2': {'file': f'{datadir}/tp2_7.txt', 'color': '#0e038a'},
+    'rep3': {'file': f'{datadir}/tp3_7.txt', 'color': '#3e7ec7'},
+    'rep4': {'file': f'{datadir}/tp4_7.txt', 'color': '#78ccf0'},
+    'rep5': {'file': f'{datadir}/tp5_7.txt', 'color': '#477ed1'},
+}
+
+PLOT_XLIM = ('2019-12-15', '2024-09-26')
+PLOT_YLIM_CTMIN = (2.5, 6.8)
+PLOT_YLIM_TEMP  = (-18, 30)
+SIM_ROW_SLICE   = slice(20200, 20301) # getting the final simulation CTmins from the four-year empirical window
+
+def load_empirical_ctmin(ctmin_path: str, temp_path):
+    """load and aggregate F4-generation empirical CTmin data
+    ctmin_path: str (path to empirical CTmin data)
+    temp_path: str (path to temperature time series)
+    returns: dataframe
+    """
+    df_temp  = pd.read_csv(temp_path, parse_dates=['YYYYMMDD'])
+    df_ctmin = pd.read_csv(ctmin_path).rename(columns={"Year ": "Year"})
+    df_ctmin['Collection Date'] = pd.to_datetime(df_ctmin['Collection Date'])
+
+    f4 = df_ctmin[df_ctmin['Generation'] == 'F4 '].copy()
+    agg = (
+        f4.groupby(['Collection Date', 'Time point'])
+          .agg(CTmin_mean=('temp', 'mean'), CTmin_sd=('temp', 'std'), n=('temp', 'count'))
+          .reset_index()
+          .merge(df_temp[['YYYYMMDD']], left_on='Collection Date', right_on='YYYYMMDD', how='inner')
+    )
+    agg['Year'] = agg['Collection Date'].dt.year
+
+    result = (
+        agg.groupby(['Year', 'Time point'])
+           .agg(Collection_Date=('Collection Date', 'first'),
+                CTmin_mean=('CTmin_mean', 'mean'),
+                CTmin_sd=('CTmin_sd', 'mean'),
+                n=('n', 'sum'))
+           .reset_index()
+    )
+    tp_order = ["First", "Second", "Third"]
+    result['Time point'] = pd.Categorical(result['Time point'], categories=tp_order, ordered=True)
+    result = result.sort_values(['Year', 'Time point']).reset_index(drop=True)
+    result['x'] = range(len(result))
+    return result, df_temp, f4
+
+def load_replicate(path, real_dates, row_slice: slice = SIM_ROW_SLICE):
+    """load a simulation replicate, map sim days to real calendar dates, slice desired window of dates
+    path: str (path to simulation replicate file)
+    real_dates: series (mapping julien day to real date)
+    row_slice: slice (indices corresponding to desired dates)
+    returns: dataframe
+    """
+    df = pd.read_csv(path).sort_values('day').reset_index(drop=True)
+    df['sim_day_index'] = df['day'] - df['day'].min()
+    df['date'] = df['sim_day_index'].apply(lambda x: real_dates.iloc[x % len(real_dates)])
+    return df.iloc[row_slice]
+
+def load_sim_trees(tp_info, data_dir = 'data'):
+    """extract CTmin values from all tree files into a df
+    tp_info: dict (contains filename and info on sampling timepoint)
+    data_dir: str (path to data folder holding tree files)
+    returns: dataframe
+    """
+    records = [
+        {'CTmin': val, 'date': info['date'], 'year': info['year'],
+         'timepoint': info['timepoint'], 'source': 'Simulation'}
+        for tp, info in tp_info.items()
+        for val in tskit.load(f"{data_dir}/{tp}.trees")
+                        .metadata['SLiM']['user_metadata']['CTmins_final']
+    ]
+    return pd.DataFrame(records)
+
+class HandlerMultiColorLines(HandlerBase):
+    """legend handler that draws a segmented multi-color line"""
+    def __init__(self, colors, linewidth=1, **kwargs):
+        self.colors, self.linewidth = colors, linewidth
+        super().__init__(**kwargs)
+
+    def create_artists(self, legend, orig_handle, xdescent, ydescent, width, height, fontsize, trans):
+        n = len(self.colors)
+        return [
+            Line2D(
+                [xdescent + i * width / n, xdescent + (i + 1) * width / n],
+                [ydescent + height / 2] * 2,
+                color=c, linewidth=self.linewidth, transform=trans
+            )
+            for i, c in enumerate(self.colors)
+        ]
+
+def plot_ctmin_timeseries(f4_ctmin, df_temp, replicates, save_path='ctmin_timeseries.png'):
+    """plot empirical + simulated CTmin over time with a temperature background."""
+    fig, ax1 = plt.subplots(figsize=(12, 4))
+    plt.rcParams.update({'font.size': 13, 'axes.spines.top': False})
+    ax1.tick_params(axis='x', pad=10)
+
+    # temperature on right axis
+    ax2 = ax1.twinx()
+    ax2.plot(df_temp['YYYYMMDD'], df_temp['T2M'],
+             color='grey', linestyle='dotted', linewidth=1, alpha=.6, zorder=1)
+    ax2.set_ylabel('Temperature (°C)', color='grey')
+    ax2.tick_params(axis='y', labelcolor='grey')
+    ax2.set_ylim(*PLOT_YLIM_TEMP)
+    ax2.spines['top'].set_visible(False)
+
+    # empirical CTmin with +/- 2 se error bars
+    for year, g in f4_ctmin.groupby('Year'):
+        ax1.errorbar(
+            g['Collection_Date'], g['CTmin_mean'],
+            yerr=2 * g['CTmin_sd'] / np.sqrt(g['n']),
+            color='red', linewidth=1.5, marker='.', linestyle='-',
+            elinewidth=0.8, ecolor='red', capsize=3, capthick=0.8, zorder=7,
+            label='Empirical CTmin' if year == f4_ctmin['Year'].min() else None
+        )
+
+    # simulation replicates
+    for rep in replicates.values():
+        ax1.plot(rep['df']['date'], rep['df']['CTmin_mean'],
+                 color=rep['color'], linewidth=0.8, linestyle='-', zorder=6)
+
+    ax1.spines['top'].set_visible(False)
+    ax1.set_ylabel('CTmin (°C)', color='tab:blue')
+    ax1.tick_params(axis='y', labelcolor='tab:blue')
+    ax1.set_ylim(*PLOT_YLIM_CTMIN)
+    ax1.set_xlim(pd.to_datetime(PLOT_XLIM[0]), pd.to_datetime(PLOT_XLIM[1]))
+    ax1.set_xlabel('Date')
+
+    # legend
+    all_colors = ['royalblue'] + [r['color'] for r in replicates.values()]
+    sim_handle = Line2D([], [], color='black', linewidth=1, label='Simulated CTmin')
+    ax1.legend(
+        handles=[Line2D([], [], color='red', marker='.', linestyle='-',
+                               linewidth=1.5, label='Empirical CTmin'), sim_handle],
+        handler_map={sim_handle: HandlerMultiColorLines(all_colors, linewidth=1)},
+        loc='lower left', fontsize=12
+    )
+    fig.tight_layout()
+    plt.savefig(save_path, dpi=300)
+
+def plot_boxplot_comparison(emp_values, sim_values, save_path='boxplot_comparison.png'):
+    """side-by-side boxplot of empirical vs simulated CTmin"""
+    fig, ax = plt.subplots(figsize=(4, 6))
+    plt.rcParams.update({'font.size': 15})
+    bp = ax.boxplot(
+        [emp_values, sim_values],
+        tick_labels=['Empirical', 'Simulation'],
+        patch_artist=True,
+        medianprops=dict(color='red', linewidth=1),
+        widths=0.5
+    )
+    for box in bp['boxes']:
+        box.set_facecolor('lightgrey')
+        box.set_alpha(0.6)
+    ax.set_ylabel('CTmin (°C)')
+    plt.tight_layout()
+    plt.savefig(save_path, dpi=300)
+
+if __name__ == '__main__':
+    # load empirical data
+    f4_ctmin, df_temp, df_f4 = load_empirical_ctmin(f'{datadir}/CTminSeasonality.csv', '../slim/KY_timeseries.csv')
+    real_dates = df_temp['YYYYMMDD'].reset_index(drop=True)
+
+    # load simulation replicates
+    replicates = {
+        name: {**cfg, 'df': load_replicate(cfg['file'], real_dates)}
+        for name, cfg in SIM_REPLICATES.items()
+    }
+
+    # load simulation trees
+    sim_df = load_sim_trees(TP_INFO, data_dir=datadir)
+
+    # plots
+    plot_ctmin_timeseries(f4_ctmin, df_temp, replicates, save_path='../figures/Fig4-ctmin_timeseries.png')
+    plot_boxplot_comparison(df_f4['temp'].values, sim_df['CTmin'].values,
+                            save_path='../figures/Fig4-boxplot.png')
 
 # %%
 # Save path to all data files needed for this script
