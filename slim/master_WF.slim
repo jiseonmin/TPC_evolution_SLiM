@@ -1,28 +1,7 @@
 // Simulating TPC evolution using a Wright-Fisher model, assuming CTmin and B are polygenic traits.
 
 initialize() {
-	initializeTreeSeq();
-	// Two kinds of quantitative trait mutations (QTNs) are simulated. 
-	defineConstant("QTN_mean", c(0,0));
-	defineConstant("QTN_var", c(0.05, 0.05));
-	// QTN1 (B) has effect size sampled from a normal distribution with mean and standard deviation defined by the first entry of QTN_mean and QTN_var
-	// Note that 'sqrt' used because "n" uses standard deviation not variance
-	initializeMutationType("m2", 0.5, "n", QTN_mean[0], sqrt(QTN_var[0]));
-	// Mutations should have effect even after fixation, so we set convertToSubstition to False.  
-	m2.convertToSubstitution = F;
-	// Color QTN1 red in SLiMgui
-	m2.color = "red";
-	
-	// QTN2 (CTmin) has effect size sampled from a normal distribution with mean and standard deviation defined by the second entry of QTN_mean and QTN_var
-	// Note that 'sqrt' used because "n" uses standard deviation not variance
-	initializeMutationType("m3", 0.5, "n", QTN_mean[1], sqrt(QTN_var[1]));
-	m3.convertToSubstitution = F;
-	// QTN2 will look blue in SLiMgui
-	m3.color = "blue";
-	
-	// Environmental noise sampled from a gaussian with zero mean and variance = ENV_var gets added to the sum of effect sizes of QTNs to determine B and CTmin
-	defineConstant("ENV_var", 0.5);
-	
+	initializeTreeSeq();	
 	
 	// Define default parameter values. Each can be modified when this script is run on command line.
 	params = Dictionary(
@@ -35,8 +14,10 @@ initialize() {
 		"LOGINTERVAL", 1,
 		// population size throughout the simulation 
 		"N_POP", 5000,
-		// mutation rate
+		// mutation rate of all QTN loci
 		"MU", 1e-7,
+		// variance of effect sizes for both QTN types
+		"QTN_var", 0.05,
 		// recombination rate
 		"RECOMBINATION_RATE", 1e-8,
 		// Use recovery model if True, use no-recovery model if False (default) to determine fitness for each generation.
@@ -85,7 +66,26 @@ initialize() {
 	}
 	defineConstant("PARAMS", params);
 	setSeed(seed);
+
+	// Two kinds of quantitative trait mutations (QTNs) are simulated. 
+	// QTN1 (B) has effect size sampled from a normal distribution zero mean and variance = QTN_var
+	// Note that 'sqrt' used because "n" uses standard deviation not variance
+	initializeMutationType("m2", 0.5, "n", 0, sqrt(QTN_var));
+	// Mutations should have effect even after fixation, so we set convertToSubstition to False.  
+	m2.convertToSubstitution = F;
+	// Color QTN1 red in SLiMgui
+	m2.color = "red";
 	
+	// QTN2 (CTmin) has effect size sampled from a normal distribution with zero mean and variance = QTN_var
+	// Note that 'sqrt' used because "n" uses standard deviation not variance
+	initializeMutationType("m3", 0.5, "n", 0, sqrt(QTN_var));
+	m3.convertToSubstitution = F;
+	// QTN2 will look blue in SLiMgui
+	m3.color = "blue";
+	
+	// Environmental noise sampled from a gaussian with zero mean and variance = ENV_var gets added to the sum of effect sizes of QTNs to determine B and CTmin
+	defineConstant("ENV_var", 0.5);
+
 	// The genome is 100kbp long.
 	// first 20k and last 2k segments are mutation-free in the forward-simulation because they are neutral loci. The neutral mutations can be overlayed on top of the tree sequence after the SLiM simulation. This is much faster than adding neutral mutation during the SLiM simulation.
 	initializeMutationRate(c(0, MU, 0), ends=c(20000, 80000, 99999));

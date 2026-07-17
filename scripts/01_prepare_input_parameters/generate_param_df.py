@@ -17,6 +17,7 @@ params_default = {"seed": 13579,
                   "LOGINTERVAL": 1,
                   "N_POP": 5000,
                   "MU": 1e-7,
+                  "QTN_var": 0.05,
                   "RECOMBINATION_RATE": 1e-8,
                   "RECOVERY": 'F',
                   "GEN_LEN_DEPENDS_ON_TEMP": 'T',
@@ -41,7 +42,7 @@ params_default = {"seed": 13579,
 
 # We will use the same order of parameters when saving the dataframes
 column_order = ['seed', 'RUNTIME_IF_NO_EXTERNAL_TEMP_DATA', 'BURNIN', 'LOGINTERVAL', 'N_POP', 
-                'MU', 'RECOMBINATION_RATE', 'RECOVERY', 'GEN_LEN_DEPENDS_ON_TEMP', 'FIXED_GEN_LEN', 
+                'MU', 'QTN_var', 'RECOMBINATION_RATE', 'RECOVERY', 'GEN_LEN_DEPENDS_ON_TEMP', 'FIXED_GEN_LEN', 
                 'USE_EXTERNAL_TEMP_DATA', 'TEMPDATA_PATH', 'MEAN_TEMP', 'STDEV_TEMP', 
                 'NUM_DAYS_TO_REPEAT', 'NUM_REP_TEMP_DATA', 'B_default', 
                 'CTmin_default', 'B_critical', 'DeltaB', 'CTmin_critical', 'DeltaCTmin', 
@@ -759,6 +760,66 @@ def sine3():
     # Save as csv file
     params_unique.to_csv(param_unique_filename, index=False)    
 
+def sine4():
+    '''
+    Repeat the sine example with different mutation rate and variance of effect sizes to test how GA affects efficacy of seasonal adaptation.
+    Based on sine_test, use B_critical = 20 to make adaptive tracking more visible
+    '''
+    param_filename = 'sine4_params.csv'
+    param_unique_filename = 'sine4_params_unique.csv'
+
+    # List of params to scan
+    MU_AND_QTN_VAR = [(1e-7, 0.05), (1e-8, 0.5), (1e-9, 5), (1e-6, 0.005), (1e-5, 0.0005)]
+    # OUTNAME will reflect the change of these parameters
+
+    # List of parameters to change from default values, but keep constant across all simulations
+    # List of parameters to change from default values, but keep constant across all simulations
+    NUM_DAYS_TO_REPEAT = 3600
+    NUM_REP_TEMP_DATA = 100
+    GEN_LEN_DEPENDS_ON_TEMP = 'F'
+    B_critical = 20
+    # number of generation will be NUM_DAYS_TO_REPEAT * NUM_REP_TEMP_DATA / 10
+    BURNIN = 5000
+    STDEV_TEMP = 1
+    TEMPDATA_PATH = "./sine.csv"
+    OUTDIR = "/projects/lotterhos/TPC_evol_SLiM"
+ 
+    # Other params will use values from params_default
+
+    # Loop through all combinations of parameters to scan
+    # For each combination, create a new parameter dictionary, add it to the parameter list
+    params_list = []
+    for i, (MU, QTN_var) in enumerate(MU_AND_QTN_VAR):
+        new_row = {
+                'NUM_DAYS_TO_REPEAT': NUM_DAYS_TO_REPEAT,
+                'NUM_REP_TEMP_DATA': NUM_REP_TEMP_DATA,
+                'GEN_LEN_DEPENDS_ON_TEMP': GEN_LEN_DEPENDS_ON_TEMP,
+                'B_critical': B_critical,
+                'BURNIN': BURNIN,
+                'STDEV_TEMP': STDEV_TEMP,
+                'TEMPDATA_PATH': TEMPDATA_PATH,
+                'OUTDIR': OUTDIR,
+                'MU': MU,
+                'QTN_var': QTN_var,
+                'OUTNAME': f"sine4_MU_{MU}_QTN_var_{QTN_var}"
+                }
+        for key in params_default.keys():
+            if key not in new_row.keys():
+                new_row[key] = params_default[key]
+        params_list.append(new_row)
+
+    # Save the parameter list
+    params = pd.DataFrame(params_list)
+    # Re-order columns (matches the order in slurm script in next step)
+    params = params[column_order]
+    # Save as csv file
+    params.to_csv(param_filename, index=False)
+
+    # Drop seed and outname columns
+    params_unique = params.drop(columns=['seed', 'OUTNAME']).drop_duplicates().reset_index(drop=True)
+    # Save as csv file
+    params_unique.to_csv(param_unique_filename, index=False)    
+
 def vermont():
     '''
     Use vermont NASA POWER data for mean temperature, use same hyperparameters as KY example in manuscript
@@ -914,7 +975,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Prepare simulation parameters')
     parser.add_argument('--task', type=str, required=True,
                        choices=['gaussian', 'gaussian2', 'gaussian_alt_initial', 
-                       'temp_trop', 'two_normal', 'include_sd_pop', 'sine', 'sine2', 'sine3', 
+                       'temp_trop', 'two_normal', 'include_sd_pop', 'sine', 'sine2', 'sine3', 'sine4',
                        'sine_test', 'vermont', 'kentucky'],
                        help='Type of simulation task')
     
@@ -946,6 +1007,9 @@ if __name__ == "__main__":
     elif args.task == 'sine3':
         print("making parameter files for sine3 task.")
         sine3()
+    elif args.task == 'sine4':
+        print("making parameter files for sine4 task.")
+        sine4()
     elif args.task == 'sine_test':
         print("making parameter files for sine (test) task.")
         sine_test()
