@@ -1,6 +1,6 @@
 RUNTIME_IF_NO_EXTERNAL_TEMP_DATA,BURNIN,LOGINTERVAL,N_POP,MU,QTN_var,RECOMBINATION_RATE,RECOVERY,GEN_LEN_DEPENDS_ON_TEMP,FIXED_GEN_LEN,USE_EXTERNAL_TEMP_DATA,TEMPDATA_PATH,MEAN_TEMP,STDEV_TEMP,NUM_DAYS_TO_REPEAT,NUM_REP_TEMP_DATA,B_default,CTmin_default,B_critical,DeltaB,CTmin_critical,DeltaCTmin,CTmax_critical,DeltaCTmax,OUTDIR
-200,5000,1,5000,1e-07,0.05,1e-08,F,F,10,T,./sine.csv,5,1,3600,100,31,5,20,2,0,2,40,0.2,/projects/lotterhos/TPC_evol_SLiM
-200,5000,1,5000,1e-08,0.5,1e-08,F,F,10,T,./sine.csv,5,1,3600,100,31,5,20,2,0,2,40,0.2,/projects/lotterhos/TPC_evol_SLiM
-200,5000,1,5000,1e-09,5.0,1e-08,F,F,10,T,./sine.csv,5,1,3600,100,31,5,20,2,0,2,40,0.2,/projects/lotterhos/TPC_evol_SLiM
-200,5000,1,5000,1e-06,0.005,1e-08,F,F,10,T,./sine.csv,5,1,3600,100,31,5,20,2,0,2,40,0.2,/projects/lotterhos/TPC_evol_SLiM
-200,5000,1,5000,1e-05,0.0005,1e-08,F,F,10,T,./sine.csv,5,1,3600,100,31,5,20,2,0,2,40,0.2,/projects/lotterhos/TPC_evol_SLiM
+200,5000,1,5000,1e-07,0.05,1e-08,F,F,10,T,./sine.csv,5,1,3600,100,20,10,20,2,0,2,40,0.2,/projects/lotterhos/TPC_evol_SLiM
+200,5000,1,5000,1e-08,5.0,1e-08,F,F,10,T,./sine.csv,5,1,3600,100,20,10,20,2,0,2,40,0.2,/projects/lotterhos/TPC_evol_SLiM
+200,5000,1,5000,1e-09,50.0,1e-08,F,F,10,T,./sine.csv,5,1,3600,100,20,10,20,2,0,2,40,0.2,/projects/lotterhos/TPC_evol_SLiM
+200,5000,1,5000,1e-06,0.005,1e-08,F,F,10,T,./sine.csv,5,1,3600,100,20,10,20,2,0,2,40,0.2,/projects/lotterhos/TPC_evol_SLiM
+200,5000,1,5000,1e-05,0.0005,1e-08,F,F,10,T,./sine.csv,5,1,3600,100,20,10,20,2,0,2,40,0.2,/projects/lotterhos/TPC_evol_SLiM

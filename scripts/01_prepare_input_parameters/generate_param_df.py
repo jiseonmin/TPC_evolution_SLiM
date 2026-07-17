@@ -769,7 +769,7 @@ def sine4():
     param_unique_filename = 'sine4_params_unique.csv'
 
     # List of params to scan
-    MU_AND_QTN_VAR = [(1e-7, 0.05), (1e-8, 0.5), (1e-9, 5), (1e-6, 0.005), (1e-5, 0.0005)]
+    MU_AND_QTN_VAR = [(1e-7, 0.05), (1e-8, 5), (1e-9, 50), (1e-6, 0.005), (1e-5, 0.0005)]
     # OUTNAME will reflect the change of these parameters
 
     # List of parameters to change from default values, but keep constant across all simulations
@@ -778,6 +778,8 @@ def sine4():
     NUM_REP_TEMP_DATA = 100
     GEN_LEN_DEPENDS_ON_TEMP = 'F'
     B_critical = 20
+    B_default = 20
+    CTmin_default = 10
     # number of generation will be NUM_DAYS_TO_REPEAT * NUM_REP_TEMP_DATA / 10
     BURNIN = 5000
     STDEV_TEMP = 1
@@ -795,6 +797,8 @@ def sine4():
                 'NUM_REP_TEMP_DATA': NUM_REP_TEMP_DATA,
                 'GEN_LEN_DEPENDS_ON_TEMP': GEN_LEN_DEPENDS_ON_TEMP,
                 'B_critical': B_critical,
+                'B_default': B_default,
+                'CTmin_default': CTmin_default,
                 'BURNIN': BURNIN,
                 'STDEV_TEMP': STDEV_TEMP,
                 'TEMPDATA_PATH': TEMPDATA_PATH,
