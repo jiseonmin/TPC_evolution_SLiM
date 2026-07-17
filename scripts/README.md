@@ -27,8 +27,8 @@ These are used in step 3 and 4 and are not necessary for running SLiM on cluster
 
 Here run a bash script with the name of the parameter file you would like to use. For instance, for the sine task, run:
 ```bash
-chmod +x submit_jobs.sh
-./submit_jobs.sh sine_params.csv
+chmod +x submit_job_array.sh
+./submit_job_array.sh sine_params.csv
 ```
 You should see something like:
 ```
