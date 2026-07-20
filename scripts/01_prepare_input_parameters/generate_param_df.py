@@ -823,7 +823,7 @@ def sine4():
                'STDEV_TEMP': STDEV_TEMP,
                'TEMPDATA_PATH': TEMPDATA_PATH,
                'OUTDIR': OUTDIR,
-               'RECOMBINATION_RATE': 0.5, 
+               'RECOMBINATION_RATE': 1e-4, 
                'OUTNAME': f"sine4_high_recomb"}
     for key in params_default.keys():
         if key not in new_row.keys():
