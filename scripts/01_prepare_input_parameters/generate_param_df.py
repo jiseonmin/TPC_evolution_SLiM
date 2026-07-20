@@ -769,7 +769,8 @@ def sine4():
     param_unique_filename = 'sine4_params_unique.csv'
 
     # List of params to scan
-    MU_AND_QTN_VAR = [(1e-7, 0.05), (1e-8, 25), (1e-9, 4000), (1e-6, 0.005), (1e-5, 0.0005)]
+    MU_AND_QTN_VAR_AND_RECOMB = [(1e-7, 0.05, 1e-8), (1e-8, 25, 1e-8), (1e-6, 0.005, 1e-8), (1e-5, 0.0005, 1e-8), (1e-7, 0.05, 1e-4)]
+    seed_list = range(5)
     # OUTNAME will reflect the change of these parameters
 
     # List of parameters to change from default values, but keep constant across all simulations
@@ -791,7 +792,7 @@ def sine4():
     # Loop through all combinations of parameters to scan
     # For each combination, create a new parameter dictionary, add it to the parameter list
     params_list = []
-    for i, (MU, QTN_var) in enumerate(MU_AND_QTN_VAR):
+    for i, ((MU, QTN_var, RECOMBINATION_RATE), seed) in enumerate(itertools.product(MU_AND_QTN_VAR_AND_RECOMB, seed_list)):
         new_row = {
                 'NUM_DAYS_TO_REPEAT': NUM_DAYS_TO_REPEAT,
                 'NUM_REP_TEMP_DATA': NUM_REP_TEMP_DATA,
@@ -805,30 +806,16 @@ def sine4():
                 'OUTDIR': OUTDIR,
                 'MU': MU,
                 'QTN_var': QTN_var,
-                'OUTNAME': f"sine4_MU_{MU}_QTN_var_{QTN_var}"
+                'RECOMBINATION_RATE': RECOMBINATION_RATE,
+                'seed': seed,
+                'OUTNAME': f"sine4_MU_{MU}_QTN_var_{QTN_var}_REC_{RECOMBINATION_RATE}_seed_{seed}"
                 }
         for key in params_default.keys():
             if key not in new_row.keys():
                 new_row[key] = params_default[key]
         params_list.append(new_row)
 
-    # Also test effects of linkage by simulating with much higher recombination rate
-    new_row = {'NUM_DAYS_TO_REPEAT': NUM_DAYS_TO_REPEAT,
-               'NUM_REP_TEMP_DATA': NUM_REP_TEMP_DATA,
-               'GEN_LEN_DEPENDS_ON_TEMP': GEN_LEN_DEPENDS_ON_TEMP,
-               'B_critical': B_critical,
-               'B_default': B_default,
-               'CTmin_default': CTmin_default,
-               'BURNIN': BURNIN,
-               'STDEV_TEMP': STDEV_TEMP,
-               'TEMPDATA_PATH': TEMPDATA_PATH,
-               'OUTDIR': OUTDIR,
-               'RECOMBINATION_RATE': 1e-4, 
-               'OUTNAME': f"sine4_high_recomb"}
-    for key in params_default.keys():
-        if key not in new_row.keys():
-            new_row[key] = params_default[key]
-    params_list.append(new_row)
+
 
     # Save the parameter list
     params = pd.DataFrame(params_list)
@@ -836,11 +823,17 @@ def sine4():
     params = params[column_order]
     # Save as csv file
     params.to_csv(param_filename, index=False)
-
     # Drop seed and outname columns
     params_unique = params.drop(columns=['seed', 'OUTNAME']).drop_duplicates().reset_index(drop=True)
+    # Add OUTNAME again without seed
+    params_unique['OUTNAME'] = "sine4_MU_" + \
+        params_unique['MU'].astype(str) + \
+        "_QTN_var_" + params_unique['QTN_var'].astype(str) + \
+        "_REC_" + params_unique['RECOMBINATION_RATE'].astype(str)
     # Save as csv file
     params_unique.to_csv(param_unique_filename, index=False)    
+
+
 
 def vermont():
     '''
