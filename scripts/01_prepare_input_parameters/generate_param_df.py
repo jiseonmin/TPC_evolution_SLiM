@@ -824,7 +824,7 @@ def sine4():
                'TEMPDATA_PATH': TEMPDATA_PATH,
                'OUTDIR': OUTDIR,
                'RECOMBINATION_RATE': 0.5, 
-               'OUTNAME': f"sin4_high_recomb"}
+               'OUTNAME': f"sine4_high_recomb"}
     for key in params_default.keys():
         if key not in new_row.keys():
             new_row[key] = params_default[key]
