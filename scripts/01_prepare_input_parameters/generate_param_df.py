@@ -769,7 +769,7 @@ def sine4():
     param_unique_filename = 'sine4_params_unique.csv'
 
     # List of params to scan
-    MU_AND_QTN_VAR = [(1e-7, 0.05), (1e-8, 25), (1e-9, 800), (1e-6, 0.005), (1e-5, 0.0005)]
+    MU_AND_QTN_VAR = [(1e-7, 0.05), (1e-8, 25), (1e-9, 4000), (1e-6, 0.005), (1e-5, 0.0005)]
     # OUTNAME will reflect the change of these parameters
 
     # List of parameters to change from default values, but keep constant across all simulations
