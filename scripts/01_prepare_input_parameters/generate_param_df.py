@@ -812,6 +812,24 @@ def sine4():
                 new_row[key] = params_default[key]
         params_list.append(new_row)
 
+    # Also test effects of linkage by simulating with much higher recombination rate
+    new_row = {'NUM_DAYS_TO_REPEAT': NUM_DAYS_TO_REPEAT,
+               'NUM_REP_TEMP_DATA': NUM_REP_TEMP_DATA,
+               'GEN_LEN_DEPENDS_ON_TEMP': GEN_LEN_DEPENDS_ON_TEMP,
+               'B_critical': B_critical,
+               'B_default': B_default,
+               'CTmin_default': CTmin_default,
+               'BURNIN': BURNIN,
+               'STDEV_TEMP': STDEV_TEMP,
+               'TEMPDATA_PATH': TEMPDATA_PATH,
+               'OUTDIR': OUTDIR,
+               'RECOMBINATION_RATE': 0.5, 
+               'OUTNAME': f"sin4_high_recomb"}
+    for key in params_default.keys():
+        if key not in new_row.keys():
+            new_row[key] = params_default[key]
+    params_list.append(new_row)
+
     # Save the parameter list
     params = pd.DataFrame(params_list)
     # Re-order columns (matches the order in slurm script in next step)

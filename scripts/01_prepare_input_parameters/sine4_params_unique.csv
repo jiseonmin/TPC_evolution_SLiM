@@ -4,3 +4,4 @@ RUNTIME_IF_NO_EXTERNAL_TEMP_DATA,BURNIN,LOGINTERVAL,N_POP,MU,QTN_var,RECOMBINATI
 200,5000,1,5000,1e-09,4000.0,1e-08,F,F,10,T,./sine.csv,5,1,3600,100,20,10,20,2,0,2,40,0.2,/projects/lotterhos/TPC_evol_SLiM
 200,5000,1,5000,1e-06,0.005,1e-08,F,F,10,T,./sine.csv,5,1,3600,100,20,10,20,2,0,2,40,0.2,/projects/lotterhos/TPC_evol_SLiM
 200,5000,1,5000,1e-05,0.0005,1e-08,F,F,10,T,./sine.csv,5,1,3600,100,20,10,20,2,0,2,40,0.2,/projects/lotterhos/TPC_evol_SLiM
+200,5000,1,5000,1e-07,0.05,0.5,F,F,10,T,./sine.csv,5,1,3600,100,20,10,20,2,0,2,40,0.2,/projects/lotterhos/TPC_evol_SLiM
