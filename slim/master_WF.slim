@@ -263,7 +263,7 @@ RUNTIME late() {
 function(float)w_enzymatic(float temp, float CTmin, float B) {
 	Topt = CTmin + 2 / 3 * B;
 	CTmax = CTmin + B;
-	w_TPC = asFloat(temp <= Topt) * exp(-((3 * temp - 3 * CTmin - 2 * B) / B)^2) + asFloat(temp <= CTmax) * asFloat(temp > CTmin + 2 / 3 * B) * (1 - ((3 * temp - 3 * CTmin - 2 * B) / B)^2);
+	w_TPC = asFloat(B > 0) * asFloat(temp <= Topt) * exp(-((3 * temp - 3 * CTmin - 2 * B) / B)^2) + asFloat(temp <= CTmax) * asFloat(temp > CTmin + 2 / 3 * B) * (1 - ((3 * temp - 3 * CTmin - 2 * B) / B)^2);
 	return w_TPC;
 }
 
