@@ -36,6 +36,8 @@ tskit.load  = _track(tskit.load)
 # %%
 # Figure S1
 plt.rcParams.update({'font.size': 15})
+plt.rcParams['mathtext.fontset'] = 'cm'
+
 B_list = np.linspace(20, 60, 300)
 CTmin_list = np.linspace(-20, 20, 400)
 CTmax_list = np.linspace(30, 42, 100)

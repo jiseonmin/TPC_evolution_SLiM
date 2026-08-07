@@ -869,7 +869,7 @@ fig.savefig("../figures/sine4_polygenicity_boxplot.pdf")
 # Figure 9
 # --- Effect of recombination rate, holding genetic architecture fixed at MU=1e-7, QTN_var=0.05 ---
 REC_variants = [1e-8, 1e-4]
-recomb_labels = [f"REC={r}" for r in REC_variants]
+recomb_labels = ["REC" + r"$=10^{-8}$", "REC" + r"$=10^{-4}$"]
 recomb_colors = ['tab:blue', 'tab:orange']
 recomb_metrics = {label: {'CTmin_amplitude': [], 
                                 'CTmin_winter_lag': [], 
@@ -887,7 +887,7 @@ for r, label in zip(REC_variants, recomb_labels):
             recomb_metrics[label][key].append(m[key])
 
 fig, ax = plt.subplots(nrows=2, ncols=3, figsize=(12, 10))
-fig.suptitle("Effect of recombination rate (MU=1e-7, QTN_var=0.05)")
+fig.suptitle("Effect of recombination rate (MU" + r"$=1.0\times10^{-7}$"+" , QTN_var=0.05)")
 for i, (key, ylabel) in enumerate(metric_titles):
     bp = ax.flat[i].boxplot([recomb_metrics[label][key] for label in recomb_labels],
                         tick_labels=recomb_labels, patch_artist=True)
