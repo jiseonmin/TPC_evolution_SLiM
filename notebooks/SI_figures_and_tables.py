@@ -426,103 +426,9 @@ fig.savefig(f"../figures/bimodality_ver2.png", bbox_inches='tight')
 
 ax[0].legend()
 
+
 # %%
 # Figure S6
-plt.rcParams.update({'font.size': 15})
-params = pd.read_csv("../scripts/01_prepare_input_parameters/gaussian_params.csv")
-params = params[(params.STDEV_TEMP < 10)]
-params_sub = params[(params.seed == 29)]
-params_sub = params_sub.sort_values(by=['MEAN_TEMP', 'STDEV_TEMP']).reset_index(drop=True)
-
-muTs = params_sub.MEAN_TEMP.unique()
-sigmaTs = params_sub.STDEV_TEMP.unique()
-fig, ax = plt.subplots(figsize=(16, 16), nrows=3, ncols=2)
-fig.suptitle("[Mean(Temperature), Stdev(Temperature)]")
-threshold = 0.5 # threshold for coloring - when the parameter is within critical value
-
-for i, subax in enumerate(ax.flat):
-    if i%3==0:
-        subax.set_ylabel("Breadth")
-    if i>=6:
-        subax.set_xlabel("Critical Thermal minimum")
-    
-for index, row in params_sub.iterrows():
-    # locate muT and sigmaT in the unique list
-    i = list(muTs).index(row.MEAN_TEMP)
-    j = list(sigmaTs).index(row.STDEV_TEMP)
-    B_and_CTmin = pd.read_csv(f"{datadir}gaussian_MEAN_TEMP_{row.MEAN_TEMP}_STDEV_TEMP_{row.STDEV_TEMP}_seed_{row.seed}.csv", engine='python', sep=', ')
-    analytical_info = np.load(f"{datadir}gaussian_MEAN_TEMP_{row.MEAN_TEMP}_STDEV_TEMP_{row.STDEV_TEMP}_analytical_info.npz", allow_pickle=True)
-
-    Bs_final = np.array(B_and_CTmin.B)
-    CTmins_final = np.array(B_and_CTmin.CTmin)
-    random.seed(4)
-    sample_idx = random.sample(range(len(Bs_final)), 40)
-    colors = []
-    for B, CTmin in zip(Bs_final[sample_idx], CTmins_final[sample_idx]):
-        w_CTmin = tpc_object.w_CTmin(CTmin)
-        w_B = tpc_object.w_B(B)
-        CTmax = CTmin + B
-        w_CTmax = tpc_object.w_CTmax(CTmax)
-        if (w_B < threshold) and (w_CTmin > threshold) and (w_CTmax > threshold):
-            # Too generalist
-            color = 'g'
-            alpha = 1
-        elif (w_CTmin < threshold) and (w_B > threshold) and (w_CTmax > threshold):
-            # Too much cold adaptation
-            color = 'b'
-            alpha = 1
-        elif (w_B > threshold) and (w_CTmin > threshold) and (w_CTmax < threshold):
-            # Too much heat adaptation
-            color = 'r'
-            alpha = 1
-        elif (np.array([w_B, w_CTmin, w_CTmax]) > threshold).all():
-            # not limited by any of 3 physiological constraints
-            color = 'grey'
-            alpha = 1
-        else:
-            print("constrained by more than one types of limits")
-            continue
-        colors.append(color)
-
-
-    contour = ax[i,j].contourf(analytical_info['CTmin_grid'], 
-                                  analytical_info['B_grid'], 
-                                  analytical_info['W_contour'], 
-                                  vmin=0, vmax=1, 
-                                  cmap='viridis')
-    ax[i,j].scatter(CTmins_final[sample_idx], Bs_final[sample_idx], marker='o', edgecolor='w', facecolor=colors, s=20)
-    ax[i,j].set_title(f"[{row.MEAN_TEMP}, {row.STDEV_TEMP}]")
-    
-    # Calculate genetic covariance (sum of effect sizes in QTN_CTmin vs. QTN_B)
-    ts = tskit.load(f"{datadir}gaussian_MEAN_TEMP_{row.MEAN_TEMP}_STDEV_TEMP_{row.STDEV_TEMP}_seed_{row.seed}.trees")
-    G_CTmin_list = np.zeros(ts.num_individuals)
-    G_B_list = np.zeros(ts.num_individuals)
-    
-    var_idx = 0
-    for var in ts.variants():
-        gene_dose = var.genotypes[::2] + var.genotypes[1::2]
-        s = var.site.mutations[0].metadata['mutation_list'][0]['selection_coeff']
-        if var.site.mutations[0].metadata['mutation_list'][0]['mutation_type'] == 2:
-        # m2, i.e. QTN for B
-            G_B_list += gene_dose * s
-        elif var.site.mutations[0].metadata['mutation_list'][0]['mutation_type'] == 3:
-            G_CTmin_list += gene_dose * s
-        else:
-            print("undefined mutation type")
-        var_idx += 1
-
-    g_corr = np.corrcoef(G_B_list, G_CTmin_list)[0,1]
-    ax[i,j].text(20, 35, f"$r_g$={g_corr:.3f}", color='yellow')
-    p_corr = np.corrcoef(Bs_final, CTmins_final)[0,1]
-    ax[i,j].text(20, 30, f"$r_p$={p_corr:.3f}", color='yellow')
-cbar_ax = fig.add_axes([0.92, 0.18, 0.02, 0.7])  # [left, bottom, width, height]
-fig.colorbar(cm.ScalarMappable(norm=Normalize(vmin=0, vmax=1), cmap='viridis'),
-             cax=cbar_ax, orientation='vertical')
-cbar_ax.set_title("Expected fitness")
-fig.savefig("../figures/SI_Fig2_sample_TPCs_on_fitness_landscape.pdf", bbox_inches='tight')
-
-# %%
-# Figure S7
 import seaborn as sns
 fig, ax = plt.subplots(nrows=5, ncols=2, figsize=(20,20))
 
@@ -587,7 +493,7 @@ for i, key in enumerate(df.keys()[2:]):
 
 fig.savefig("../figures/result-s1-boxplots.pdf", bbox_inches='tight')
 # %%
-# Figure S8
+# Figure S7
 params = pd.read_csv("../scripts/01_prepare_input_parameters/temp_trop_params.csv")
 params_sub = params[(params.seed ==29) & (params.STDEV_TEMP < 10)] #
 
@@ -673,32 +579,12 @@ fig.colorbar(cm.ScalarMappable(norm=Normalize(vmin=0, vmax=1), cmap='viridis'),
              cax=cbar_ax, orientation='vertical')
 cbar_ax.set_title("Expected fitness")
 fig.savefig("../figures/trop_samples.pdf", bbox_inches='tight')
-# %%
-# Figure S9
+
+#  %%
+# Figure S8
+# Let's use the B and CTmin list
 CTmin_critical = 0
 B_critical = 20
-log = pd.read_csv(f"{datadir}sine_test_CTmin_critical_{CTmin_critical}_B_critical_{B_critical}.txt")
-# Use only the last 10 years of the data (1 yr = 360 days in this example)
-log['day_from_end_of_sim'] = log.day - max(log.day)
-log2 = log[log.day_from_end_of_sim > - 3601]
-
-fig, ax = plt.subplots(figsize=(10,5))
-ax.plot(log2.day_from_end_of_sim,log2.fitness_sd ** 2 / log2.fitness_mean, color='tab:blue')
-ax2 = ax.twinx()
-ax2.plot(log2.day_from_end_of_sim, log2.Temp, color='tab:grey', linestyle='--')
-ax.set_xlim((-720, 0))
-ax.tick_params(axis='y', labelcolor='tab:blue')
-
-ax2.tick_params(axis='y', labelcolor='tab:grey')
-ax.set_ylabel("Var(fitness) / Mean(fitness)", color='tab:blue')
-ax2.set_ylabel("Body Temperature", color='tab:grey')
-ax.set_xlabel("Days from the end of simulation")
-ax.set_xticks(np.arange(-720, 1, 90))
-fig.savefig("../figures/SI_fig_summer_winter_var_w.pdf")
-#
-#  %%
-# Figure S10
-# Let's use the B and CTmin list
 B_and_CTmin = pd.read_csv(f"{datadir}sine_test_CTmin_critical_{CTmin_critical}_B_critical_{B_critical}.csv", engine='python')
 fig, ax = plt.subplots(nrows=1, ncols=2, figsize=(10,4))
 n_sample = 1000
@@ -736,8 +622,32 @@ ax[1].set_xlabel("Fitness")
 ax[0].set_xlabel("Body Temperature")
 ax[0].set_ylim((0,1))
 fig.savefig("../figures/SI_asymmetric_TPC.pdf", bbox_inches='tight')
+
 # %%
-# Figure S11
+# Figure S9
+CTmin_critical = 0
+B_critical = 20
+log = pd.read_csv(f"{datadir}sine_test_CTmin_critical_{CTmin_critical}_B_critical_{B_critical}.txt")
+# Use only the last 10 years of the data (1 yr = 360 days in this example)
+log['day_from_end_of_sim'] = log.day - max(log.day)
+log2 = log[log.day_from_end_of_sim > - 3601]
+
+fig, ax = plt.subplots(figsize=(10,5))
+ax.plot(log2.day_from_end_of_sim,log2.fitness_sd ** 2 / log2.fitness_mean, color='tab:blue')
+ax2 = ax.twinx()
+ax2.plot(log2.day_from_end_of_sim, log2.Temp, color='tab:grey', linestyle='--')
+ax.set_xlim((-720, 0))
+ax.tick_params(axis='y', labelcolor='tab:blue')
+
+ax2.tick_params(axis='y', labelcolor='tab:grey')
+ax.set_ylabel("Var(fitness) / Mean(fitness)", color='tab:blue')
+ax2.set_ylabel("Body Temperature", color='tab:grey')
+ax.set_xlabel("Days from the end of simulation")
+ax.set_xticks(np.arange(-720, 1, 90))
+fig.savefig("../figures/SI_fig_summer_winter_var_w.pdf")
+#
+# %%
+# Figure S10
 import itertools
 CTmin_criticals = [0, 4]
 B_criticals = [20, 40]
@@ -766,211 +676,13 @@ for CTmin_critical, B_critical in itertools.product(CTmin_criticals, B_criticals
 
     
 # %%
-# Figure S12
-
-sine3_params = pd.read_csv("../scripts/01_prepare_input_parameters/sine3_params.csv")
-kinds = ['T', 'F']
-fig, ax = plt.subplots(nrows=1, ncols=2, figsize=(10, 5))
-
-ax2 = [None, None]
-def plot_sine3(row):
-    if row.seed < 10:
-        if os.path.isfile(f"{datadir}/{row.OUTNAME}.trees"):
-            log = pd.read_csv(f"{datadir}/{row.OUTNAME}.txt")
-            i = kinds.index(row.GEN_LEN_DEPENDS_ON_TEMP)
-            ax.flat[i].plot(log.day - max(log.day), log.CTmin_mean)
-        if row.seed == 0:
-            ax2[i] = ax[i].twinx()
-            ax2[i].plot(log.day - max(log.day), log.Temp, color="grey", linestyle="--")
-            ax2[i].tick_params(axis='y', labelcolor='grey')
-    
-sine3_params.apply(plot_sine3, axis=1)
-
-for i, kind in enumerate(['T', 'F']):
-    ax.flat[i].set_xlim((-720, 0))
-    ax.flat[i].set_ylim((10, 14))
-    ax[i].set_xlabel("days from end of simulation")
-    ax[i].set_title(f"variable gen length={kind}")
-    if i != 0:
-        ax[i].set_yticks([])
-    if i != 1:
-        ax2[i].set_yticks([])
-ax[0].set_ylabel('CTmin')
-ax2[1].set_ylabel('Temp', color='grey')
-   
-
-fig.savefig("../figures/variable_vs_fixed_gen.png", bbox_inches='tight')
-# %%
-# Figure S13
-
-sine2_params = pd.read_csv("../scripts/01_prepare_input_parameters/sine2_params.csv")
-Ns = sine2_params.N_POP.unique()
-
-fig, ax = plt.subplots(nrows=1, ncols=3, figsize=(15, 5))
-ax2 = [None, None, None]
-def plot_sine2(row):
-    if row.seed < 10:
-        if os.path.isfile(f"{datadir}/{row.OUTNAME}.trees"):
-            log = pd.read_csv(f"{datadir}/{row.OUTNAME}.txt")
-            i = list(Ns).index(row.N_POP)
-            ax.flat[i].plot(log.day - max(log.day), log.CTmin_mean)
-        if row.seed == 0:
-            ax2[i] = ax[i].twinx()
-            ax2[i].plot(log.day - max(log.day), log.Temp, color="grey", linestyle="--")
-            ax2[i].tick_params(axis='y', labelcolor='grey')
-    
-sine2_params.apply(plot_sine2, axis=1)
-
-for i, N in enumerate(Ns):
-    ax.flat[i].set_xlim((-720, 0))
-    # ax.flat[i].set_ylim((2, 3.8))
-    ax[i].set_xlabel("days from end of simulation")
-    ax[i].set_title(f"N={N}")
-    if i != 0:
-        ax[i].set_yticks([])
-    if i != 2:
-        ax2[i].set_yticks([])
-ax[0].set_ylabel('CTmin')
-ax2[2].set_ylabel('Temp', color='grey')
-fig.savefig("../figures/changing_N.png", bbox_inches='tight')
-# %%
-# Figure S14
-sine2_params = pd.read_csv("../scripts/01_prepare_input_parameters/sine2_params.csv")
-Ns = [5000, 50_000]
-winter_lags = {5000: [], 50_000: []}
-summer_lags = {5000: [], 50_000: []}
-
-def measure_lag(row):
-    if row.N_POP in Ns:
-        log = pd.read_csv(f"{datadir}/{row.OUTNAME}.txt")
-        log2 = log[log.cycle - max(log.cycle) > -360 * 10]
-        Temp_maxs = scipy.signal.find_peaks(log2.Temp, distance = 30)[0]
-
-        CTmin_maxs = scipy.signal.find_peaks(log2.CTmin_mean, distance = 30, height=log2.CTmin_mean.mean())[0]
-
-        Temp_mins = scipy.signal.find_peaks(-log2.Temp, distance = 30)[0]
-        CTmin_mins = scipy.signal.find_peaks(-log2.CTmin_mean, distance = 30, height=-log2.CTmin_mean.mean())[0]
-        CTmin_lag_winter = np.mean(CTmin_mins[1:] - Temp_mins[:-1])
-        CTmin_lag_summer = np.mean(CTmin_maxs - Temp_maxs)
-        winter_lags[row.N_POP].append(CTmin_lag_winter)
-        summer_lags[row.N_POP].append(CTmin_lag_summer)
-
-
-sine2_params.apply(measure_lag, axis=1)
-fig, ax = plt.subplots(nrows=1, ncols=2, figsize=(15, 8))
-ax[0].boxplot(winter_lags.values(), tick_labels=winter_lags.keys())
-ax[0].set_ylabel('Winter lag (generations)')
-ax[0].set_xlabel('Population size')
-ax[1].boxplot(summer_lags.values(), tick_labels=summer_lags.keys())
-ax[1].set_ylabel('Summer lag (generations)')
-ax[1].set_xlabel("Population size")
-fig.savefig("../figures/changing_N_lag.png", bbox_inches='tight')
-# %%
-# Figure S15
-# prepare theoretical prediction
-# First import time-series data and fit a Gaussian KDE
-vt_temp = pd.read_csv("../slim/VT_weather.txt").T2M
-kernel = scipy.stats.gaussian_kde(vt_temp)
-
-# Modify w_TPC functions to predict optimal TPC from an arbitrary kernel
-def expected_w_TPC_temp_series(temp_series, CTmin, B):
-    '''
-    Expected TPC given temperature list, assuming reproductive output per day after heat damage is zero (no-recovery model).
-    The expected value is derived in the SI of the manuscript. 
-    In short, it involves calculating probability that the temperature stays under lethal limit for various number of days.
-    '''
-    # update params to match the simulation
-    tpc_object.num_days_per_gen = 21 
-    nr = tpc_object.num_days_per_gen
-    tpc_object.CTmin_critical = 1.5
-    tpc_object.B_critical = 30
-
-    CTmin_array = np.array(CTmin, ndmin=1)
-    B_array = np.array(B, ndmin=1)
-    
-    kernel = scipy.stats.gaussian_kde(temp_series)
-    CTmin_grid, B_grid = np.meshgrid(CTmin_array, B_array)
-    output = np.zeros(CTmin_grid.shape)
-    for i in range(output.shape[0]):
-        for j in range(output.shape[1]):
-            CTmin = CTmin_grid[i,j]
-            B = B_grid[i,j]
-            CTmax = CTmin + B
-            fun = lambda T: tpc_object.w_TPC(T=T, CTmin=CTmin, B=B) * kernel.pdf(T)
-            integral, err = scipy.integrate.quad(fun, CTmin, CTmax)
-            r = kernel.integrate_box_1d(min(temp_series) - 10, CTmax)
-            if (1 - r) < np.finfo(np.float64).tiny:
-                C = 1
-            else:
-                C = (1 - nr * r ** (nr - 1) + (-1 + nr) * r ** nr) / (nr * (1 - r)) + r ** (nr - 1)
-            output[i,j] = C * integral
-    return output
-
-def optimize_expected_w_TPC_temp_series(temp_series, CTmin0, B0):
-    '''
-    Find optimal CTmin and B that maximize expected w_TPC using no-recovery model.
-    CTmin0 and B0 are initial guess
-    '''
-    B_tiny = 1e-3
-    def objective(params):
-        CTmin, B = params
-        expected_w_TPC = expected_w_TPC_temp_series(temp_series=temp_series, B=B, CTmin=CTmin)
-        return -expected_w_TPC
-    bnds = ((None, None), (B_tiny, None))
-    results = scipy.optimize.minimize(objective, [CTmin0, B0], method='L-BFGS-B', bounds=bnds)
-    return results.x
-CTmin_opt, B_opt = optimize_expected_w_TPC_temp_series(vt_temp, 5, 10)
-
+# Figure S11
+fig, ax = plt.subplots(figsize=(10,10))
 
 log_new = pd.read_csv(f"{datadir}VT_autocorrelated_0.txt")
 log2 = pd.read_csv(f"{datadir}VT_scrambled.txt")
-Tlist = np.linspace(-25, 30, 200)
-fig, ax = plt.subplots(figsize=(8,10), nrows=2, ncols=1, height_ratios=[3, 1], sharex=True)
-# number of generations before the end of simulation to sample
 sample1=32
 sample2=23
-ax[0].plot(Tlist, 
-    tpc_object.w_TPC(B=np.array(log_new.B_mean)[-1-sample1], 
-        CTmin=np.array(log_new.CTmin_mean)[-1-sample1], 
-        T=Tlist),
-    color='tab:blue',
-    linestyle='dotted',
-    label=f'autocorrelated VT, winter sample')
-print(f"B={np.array(log_new.B_mean)[-1-sample1]}")
-print(f"CTmin={np.array(log_new.CTmin_mean)[-1-sample1]}")
-ax[0].plot(Tlist, 
-    tpc_object.w_TPC(B=np.array(log_new.B_mean)[-1-sample2], 
-        CTmin=np.array(log_new.CTmin_mean)[-1-sample2], 
-        T=Tlist),
-    linestyle='--',
-    label=f'autocorrelated VT, summer sample')
-
-print(f"B summer={np.array(log_new.B_mean)[-1-sample2]}")
-print(f"CTmin={np.array(log_new.CTmin_mean)[-1-sample2]}")
-ax[0].plot(Tlist, 
-    tpc_object.w_TPC(B=np.array(log2.B_mean)[-1], 
-        CTmin=np.array(log2.CTmin_mean)[-1], 
-        T=Tlist),
-    label='non-autocorrelated VT')
-ax[0].plot(Tlist, 
-    tpc_object.w_TPC(B=B_opt, CTmin=CTmin_opt, T=Tlist), 
-    label='Theory')
-ax[0].set_xlim((Tlist[0], Tlist[-1]))
-ax[0].set_title("Avg. evolved TPC using VT timeseries", fontsize=25)
-ax[0].set_xlabel("Temperature", fontsize=25)
-ax[0].set_ylabel("Fitness", fontsize=25)
-ax[0].legend()
-ax[1].hist(log_new.Temp, density=True, label='autocorrelated VT', alpha=0.5)
-ax[1].hist(log2.Temp, density=True, label='non-autocorrelated VT', alpha=0.5)
-ax[1].plot(Tlist, kernel.pdf(Tlist), label='Theory (KDE)')
-ax[1].set_xlabel("Temperature", fontsize=25)
-ax[1].set_ylabel("Density", fontsize=25)
-ax[1].set_xlim((Tlist[0], Tlist[-1]))
-ax[1].legend()
-fig.savefig('../figures/vt-autocorrelation.pdf', bbox_inches='tight')
-# %%
-# Figure S16
-fig, ax = plt.subplots(figsize=(10,10))
 
 ax.plot(log_new.cycle -max(log_new.cycle), log_new.Temp, label='autocorrelated VT')
 ax.plot(log2.cycle -max(log2.cycle), log2.Temp, label='non-autocorrelated VT')
@@ -1150,6 +862,54 @@ summary_df = final_tpc_classified_df.groupby(['mean_T', 'std_T']).agg({
 print(summary_df)
 # print(summary_df.to_latex())
 # %%
+# Table S4
+
+sine4_params = pd.read_csv("../scripts/01_prepare_input_parameters/sine4_params.csv")
+
+def QTN_stats(row):
+    '''
+    Find the number of segregating QTN's mutations at the end of the simulation and the mean and standard deviation of effect sizes
+    '''
+    if not os.path.isfile(f"{datadir}{row.OUTNAME}.trees"):
+        return (row.MU, row.QTN_var, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan)
+    
+    ts = tskit.load(f"{datadir}{row.OUTNAME}.trees")
+    QTN_Bs = []
+    QTN_CTmins = []
+    V_a_CTmin = 0
+    V_a_B = 0
+    for v in ts.variants():
+        p = v.frequencies()[v.alleles[1]]
+        q = 1 - p
+        mut_info = v.site.mutations[0].metadata['mutation_list'][0]
+        if mut_info['mutation_type'] == 2:
+            QTN_Bs.append(mut_info['selection_coeff'])
+            V_a_B += 2 * p * q * mut_info['selection_coeff'] ** 2
+        elif mut_info['mutation_type'] == 3:
+            QTN_CTmins.append(mut_info['selection_coeff'])
+            V_a_CTmin += 2 * p * q * mut_info['selection_coeff'] ** 2
+
+    return (row.MU, row.QTN_var, row.RECOMBINATION_RATE, len(QTN_Bs), np.mean(QTN_Bs), np.std(QTN_Bs), len(QTN_CTmins), np.mean(QTN_CTmins), np.std(QTN_CTmins), V_a_B, V_a_CTmin)
+
+QTN_df = sine4_params.apply(QTN_stats, axis=1, result_type='expand')
+QTN_df.columns = ['MU', 
+                  'QTN_var', 
+                  'RECOMBINATION_RATE', 
+                  'num_QTN_Bs', 
+                  'mean(QTN_B_effect_size)', 
+                  'std(QTN_B_effect_size)', 
+                  'num_QTN_CTmins', 
+                  'mean(QTN_CTmin_effect_size)', 
+                  'std(QTN_CTmin_effect_size)', 
+                  'total additive genetic variance of B', 
+                  'total additive genetic variance of CTmin']
+QTN_df['num_QTN_Bs'] = QTN_df['num_QTN_Bs'].astype('Int64')
+QTN_df['num_QTN_CTmins'] = QTN_df['num_QTN_CTmins'].astype('Int64')
+summary_df = QTN_df.groupby(['MU', 'QTN_var', 'RECOMBINATION_RATE']).agg({
+    'total additive genetic variance of B': ['mean', 'std'],
+    'total additive genetic variance of CTmin': ['mean', 'std']
+})
+print(summary_df)
 
 # %%
 # Save path to all data files needed for this script
