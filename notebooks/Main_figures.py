@@ -841,6 +841,57 @@ for (mu, qtn_var), label in zip(MU_AND_QTN_VAR, architecture_labels):
             architecture_metrics[label][key].append(m[key])
 
 
+# %%
+# Figure 8 (timeseries)
+polygenicity_series = {label: [] for label in architecture_labels}
+temp_reference = None
+for (mu, qtn_var), label, color in zip(MU_AND_QTN_VAR, architecture_labels, architecture_colors):
+    rows = sine4_params[(sine4_params.MU == mu) & (sine4_params.QTN_var == qtn_var) & (sine4_params.RECOMBINATION_RATE == 1e-8)]
+    for _, row in rows.iterrows():
+        log = pd.read_csv(f"{datadir}/{row.OUTNAME}.txt")
+        log2 = log[log.cycle - max(log.cycle) > -360 * 10].copy()
+        log2['day_from_end_of_sim'] = log2.day - max(log.day)
+        log2 = log2[(log2.day_from_end_of_sim >= -720) & (log2.day_from_end_of_sim <= 0)]
+        polygenicity_series[label].append(log2[['day_from_end_of_sim', 'Temp', 'CTmin_mean', 'CTmax_mean', 'B_mean']])
+        if temp_reference is None:
+            temp_reference = log2[['day_from_end_of_sim', 'Temp']].copy()
+
+fig, ax = plt.subplots(nrows=1, ncols=3, figsize=(20, 5), sharex=True)
+for i, trait in enumerate(['CTmin_mean', 'CTmax_mean', 'B_mean']):
+    for label, color in zip(architecture_labels, architecture_colors):
+        for s in polygenicity_series[label]:
+            ax[i].plot(s.day_from_end_of_sim, s[trait], color=color, linewidth=0.9, alpha=0.3)
+
+        architecture_mean = (
+            pd.concat(polygenicity_series[label], ignore_index=True)
+            .groupby('day_from_end_of_sim', as_index=False)[trait]
+            .mean()
+        )
+        ax[i].plot(
+            architecture_mean.day_from_end_of_sim,
+            architecture_mean[trait],
+            color=color,
+            linewidth=3,
+            alpha=1,
+            label=label
+        )
+    ax[i].set_xlim((-720, 0))
+    ax[i].set_xticks(np.arange(-720, 1, 90))
+    ax[i].set_xlabel('days from end of simulation')
+    ylabel = trait + ' (C)'
+    ax[i].set_ylabel(ylabel)
+
+    ax2 = ax[i].twinx()
+    ax2.plot(temp_reference.day_from_end_of_sim, temp_reference.Temp, color='grey', linestyle='--', linewidth=1.5)
+    ax2.set_ylabel('Temperature (C)', color='grey')
+    ax2.tick_params(axis='y', labelcolor='grey')
+
+handles, labels = ax[0].get_legend_handles_labels()
+fig.legend(handles, labels, loc='upper center', ncols=3, frameon=False)
+fig.tight_layout(rect=[0, 0, 1, 0.92])
+fig.savefig("../figures/sine4_polygenicity_ctmin_ctmax_timeseries.pdf", bbox_inches='tight')
+
+
 # %% 
 # Figure 8
 metric_titles = [('CTmin_amplitude', 'Amplitude of CTmin (°C)'), 
