@@ -4,9 +4,11 @@ We provide a master SLiM script for simulating TPC evolution where TPC parameter
 
 ## Citation
 
-If you use this code, please cite our paper (will be edited when paper is preprinted):
+If you use this code, please cite our paper (to be updated):
 
-Min J, Chapman Z, ..., & Lotterhos KE. A general model for the evolution of thermal performance curves with application to real time-series data
+A general model for the evolution of thermal performance curves with application to real time-series data
+Jiseon Min, Zoe Chapman, Ellie McCabe, Joaquin C. B. Nunez, Nicholas Teets, Katie E. Lotterhos
+bioRxiv 2026.06.17.733045; doi: https://doi.org/10.64898/2026.06.17.733045
 
 ## Quick Start
 
