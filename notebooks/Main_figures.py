@@ -664,8 +664,13 @@ if __name__ == '__main__':
 
     # plots
     plot_ctmin_timeseries(f4_ctmin, df_temp, replicates, save_path='../figures/Fig4-ctmin_timeseries.png')
+    plot_ctmin_timeseries(f4_ctmin, df_temp, replicates, save_path='../figures/Fig4-ctmin_timeseries.pdf')
+
     plot_boxplot_comparison(df_f4['temp'].values, sim_df['CTmin'].values,
                             save_path='../figures/Fig4-boxplot.png')
+    plot_boxplot_comparison(df_f4['temp'].values, sim_df['CTmin'].values,
+                            save_path='../figures/Fig4-boxplot.pdf')
+
 
 # %%
 # Figure 6
@@ -852,22 +857,22 @@ for (mu, qtn_var), label, color in zip(MU_AND_QTN_VAR, architecture_labels, arch
         log2 = log[log.cycle - max(log.cycle) > -360 * 10].copy()
         log2['day_from_end_of_sim'] = log2.day - max(log.day)
         log2 = log2[(log2.day_from_end_of_sim >= -720) & (log2.day_from_end_of_sim <= 0)]
-        polygenicity_series[label].append(log2[['day_from_end_of_sim', 'Temp', 'CTmin_mean', 'CTmax_mean', 'B_mean']])
+        polygenicity_series[label].append(log2[['day_from_end_of_sim', 'Temp', 'CTmin_mean', 'CTmax_mean', 'B_mean', 'fitness_mean']])
         if temp_reference is None:
             temp_reference = log2[['day_from_end_of_sim', 'Temp']].copy()
 
-fig, ax = plt.subplots(nrows=1, ncols=3, figsize=(20, 5), sharex=True)
-for i, trait in enumerate(['CTmin_mean', 'CTmax_mean', 'B_mean']):
+fig, ax = plt.subplots(nrows=2, ncols=2, figsize=(18, 10), sharex=True)
+for i, trait in enumerate(['CTmin_mean', 'CTmax_mean', 'B_mean', 'fitness_mean']):
     for label, color in zip(architecture_labels, architecture_colors):
         for s in polygenicity_series[label]:
-            ax[i].plot(s.day_from_end_of_sim, s[trait], color=color, linewidth=0.9, alpha=0.3)
+            ax.flat[i].plot(s.day_from_end_of_sim, s[trait], color=color, linewidth=0.9, alpha=0.3)
 
         architecture_mean = (
             pd.concat(polygenicity_series[label], ignore_index=True)
             .groupby('day_from_end_of_sim', as_index=False)[trait]
             .mean()
         )
-        ax[i].plot(
+        ax.flat[i].plot(
             architecture_mean.day_from_end_of_sim,
             architecture_mean[trait],
             color=color,
@@ -875,18 +880,18 @@ for i, trait in enumerate(['CTmin_mean', 'CTmax_mean', 'B_mean']):
             alpha=1,
             label=label
         )
-    ax[i].set_xlim((-720, 0))
-    ax[i].set_xticks(np.arange(-720, 1, 90))
-    ax[i].set_xlabel('days from end of simulation')
+    ax.flat[i].set_xlim((-720, 0))
+    ax.flat[i].set_xticks(np.arange(-720, 1, 90))
+    ax.flat[i].set_xlabel('days from end of simulation')
     ylabel = trait + ' (C)'
-    ax[i].set_ylabel(ylabel)
+    ax.flat[i].set_ylabel(ylabel)
 
-    ax2 = ax[i].twinx()
+    ax2 = ax.flat[i].twinx()
     ax2.plot(temp_reference.day_from_end_of_sim, temp_reference.Temp, color='grey', linestyle='--', linewidth=1.5)
     ax2.set_ylabel('Temperature (C)', color='grey')
     ax2.tick_params(axis='y', labelcolor='grey')
 
-handles, labels = ax[0].get_legend_handles_labels()
+handles, labels = ax.flat[0].get_legend_handles_labels()
 fig.legend(handles, labels, loc='upper center', ncols=3, frameon=False)
 fig.tight_layout(rect=[0, 0, 1, 0.92])
 fig.savefig("../figures/sine4_polygenicity_ctmin_ctmax_timeseries.pdf", bbox_inches='tight')
