@@ -17,6 +17,7 @@ __pycache__/
 !slim/VT_weather.txt
 !slim/sine.csv
 !slim/KY_timeseries.csv
+!slim/slimgui_screenshot.png
 slim/master_WF_modified.slim
 
 # In general, don't track data files. 
