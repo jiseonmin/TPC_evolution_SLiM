@@ -2,26 +2,16 @@
 
 We provide a master SLiM script for simulating TPC evolution where TPC parameters are assumed as polygenic traits. This is a repository is complementary to a manuscript in prepartion, but can be adapted for various user-defined temperature data.
 
-## Citation
-
-If you use this code, please cite our paper (to be updated):
-
-A general model for the evolution of thermal performance curves with application to real time-series data
-Jiseon Min, Zoe Chapman, Ellie McCabe, Joaquin C. B. Nunez, Nicholas Teets, Katie E. Lotterhos
-bioRxiv 2026.06.17.733045; doi: https://doi.org/10.64898/2026.06.17.733045
+## Citation (Removed for anonymous review)
 
 ## Quick Start
 
-1. Clone the repository
-```bash
-   git clone https://github.com/jiseonmin/TPC_evolution_SLiM.git
-   cd TPC_evolution_SLiM
-```
+1. Clone the repository (removed for anonymous review)
 
 2. Set up the conda environment
 ```bash
-   conda env create -f environment.yml
-   conda activate tpc_evo_slim
+conda env create -f environment.yml
+conda activate tpc_evo_slim
 ```
 
 Now you are ready to run simulations!
@@ -29,7 +19,7 @@ Now you are ready to run simulations!
 3. (Optional) Set up environment for jupyter notebook
 To run any jupyter notebooks in `notebooks`, create a Jupyter kernel based on the conda environment
 ```bash
-   python -m ipykernel install --user --name tpc_evo_slim
+python -m ipykernel install --user --name tpc_evo_slim
 ```
 Then select kernel named `tpc_evo_slim`.
 
