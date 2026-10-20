@@ -12,7 +12,7 @@ Now hit the play button! You will run the simulation with default setting, which
 
 You will see QTNs for B on the chromosome in red and QTNs for CTmin in blue. 
 
-(Put screenshot here)
+![Screenshot of SLiM gui](./slimgui_screenshot.png)
 
 The script will generate `data` folder outside `slim` and start recording custom data every generation in `out.txt`. 
 At the end of the simulation, a tree-sequence `out.trees` will be saved also in `data`. 
@@ -21,12 +21,12 @@ In addition, `out.csv` contains list of B and CTmin of 100 randomly sampled indi
 ## Running master SLiM script in command line
 If you want to use default parameters as in the SLiM script, run:
 ```bash
-  slim master_WF.slim
+slim master_WF.slim
 ```
 
 If you want to use different parameter values, you can do something like:
 ```bash
-  slim -d B_default=20 -d OUTNAME=\'output\' master_WF.slim
+slim -d B_default=20 -d OUTNAME=\'output\' master_WF.slim
 ```
 
 Here we are editing two parameters, B_default and OUTNAME, to be 20 and 'output'. 
@@ -35,13 +35,12 @@ We do that using a parameter table saved as .csv file and a slurm script in `scr
 You can read further on the workflow in `scripts/workflow.md` and how to create a new simulation task.
 If you want to read more about how to launch SLiM in command line and run jobs in array, check out [slim-sublaunching](https://github.com/slim-community/slim-sublaunching).
 
-## Detailed explantion on SLiM script (work in progress)
+## Detailed explantion on SLiM script
 `master_WT.slim` simulates TPC evolution in a fixed thermal environment or using an external daily temperature data.
 It is a Wright-Fisher simulation (i.e. non-overlapping generation, population is replaced every generation via binomial sampling weighted by fitness) where two key parameters of thermal performance curve (TPC), B and CTmin, are quantitative traits. Fitness is determined by the individual's TPC, a list of daily temperatures in population level (`DAILY_TEMPS_AT_CURRENT_GEN`, see lines 194 to 202), how much individual temperature deviates from the population mean, and environmental noise (`epsilon` in line 217).
 
 In `Initialize()` block, we set up each chromosome of 100 kbp length to have two neutral regions (each 20kbp long) flanking a QTN region (60kbp long). There are two types of mutations, each for B and CTmin (labeled 'm2', m3'). Neutral mutations (conventionally labeled 'm1') are not simulated in SLiM because we are using tree-sequence recording, and they can be added post-SLiM using `pyslim`. Each mutation arising in QTN region is either QTN for B or CTmin by 50-50 chance, and its effect size is sampled from a Gaussian distribution with zero mean and variance of 0.05. QTN mutation arises with rate of 1e-7. The QTN region is divided into 12 linkage groups, and outside the borders between the linkage groups, recombination happens with uniform rate of 1e-8. 
 
-![Screenshot of SLiM gui]('slimgui_screenshot.png')
 
 Parameters that can be changed in command line are all set up in `Initialize()` block. They include:
 
